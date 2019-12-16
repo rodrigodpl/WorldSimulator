@@ -21,16 +21,19 @@ public class CultureStrengthEvent : WS_BaseEvent
                     float populationMultiplier = ((tile.Population() / neighbor.Population()) + 1.0f) / 2.0f;
                     float stanceMultiplier = 1.0f;
 
-                    switch (tile.nation.getAffinity(neighbor.nation).culturalStance)
+                    if (neighbor.nation != tile.nation)
                     {
-                        case CulturalStance.ASSIMILATION: stanceMultiplier += 0.30f; break;
-                        case CulturalStance.REPRESSION: stanceMultiplier -= 0.15f; break;
-                    }
+                        switch (tile.nation.getAffinity(neighbor.nation).culturalStance)
+                        {
+                            case CulturalStance.ASSIMILATION: stanceMultiplier += 0.30f; break;
+                            case CulturalStance.REPRESSION: stanceMultiplier -= 0.15f; break;
+                        }
 
-                    switch (neighbor.nation.getAffinity(tile.nation).culturalStance)
-                    {
-                        case CulturalStance.ASSIMILATION: stanceMultiplier += 0.15f; break;
-                        case CulturalStance.REPRESSION: stanceMultiplier -= 0.30f; break;
+                        switch (neighbor.nation.getAffinity(tile.nation).culturalStance)
+                        {
+                            case CulturalStance.ASSIMILATION: stanceMultiplier += 0.15f; break;
+                            case CulturalStance.REPRESSION: stanceMultiplier -= 0.30f; break;
+                        }
                     }
 
                     neighbor.addInfluence(tile.mainCulture, influence * populationMultiplier * stanceMultiplier * WS_World.frameMult);
@@ -64,7 +67,10 @@ public class RulingCultureChangeEvent : WS_BaseEvent
                 targetCulture = tile.nation.foreignCultures[i];
         }
 
-        return targetCulture != null;
+        if (targetCulture != null)
+            return Random.Range(0.0f, 100.0f) < Mathf.Sqrt(WS_World.frameMult);
+        else
+            return false;
     }
 
     protected override void Success()

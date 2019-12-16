@@ -113,7 +113,6 @@ public class WS_WorldGenerator
 
                                 WS_Culture newCulture = new WS_Culture(1, baseCulture);
                                 neighbor.nation.SetCulture(newCulture);
-                                newCulture.cultureColor = new Color(baseCulture.cultureColor.r + Random.Range(-0.15f, 0.15f), baseCulture.cultureColor.g + Random.Range(-0.15f, 0.15f), baseCulture.cultureColor.b + Random.Range(-0.15f, 0.15f));
                             }
                         }
             }
@@ -167,29 +166,22 @@ public class WS_WorldGenerator
 
                             while (tilePool.Count > 0 && nationTiles.Count < tileNum)
                             {
-                                WS_Tile newTile = tilePool[0];
-                                foreach (WS_Tile neighbor in tilePool)
-                                {
-                                    if (neighbor.habitability > newTile.habitability)
-                                        newTile = neighbor;
-                                }
+                                WS_Tile newTile = tilePool[Mathf.FloorToInt(Random.Range(0.0f, tilePool.Count - 0.01f))];
 
                                 nationTiles.Add(newTile);
                                 tilePool.Remove(newTile);
 
-                                if (tilePool.Count == 0)
+                                foreach (WS_Tile neighbor in newTile.Neighbors())
                                 {
-                                    foreach (WS_Tile neighbor in tile.Neighbors())
-                                    {
-                                        bool valid = true;
-                                        foreach (WS_Tile nationTile in nationTiles)
-                                            if (nationTile == neighbor)
-                                                valid = false;
+                                    bool valid = true;
+                                    foreach (WS_Tile nationTile in nationTiles)
+                                        if (nationTile == neighbor)
+                                            valid = false;
 
-                                        if (neighbor.habitability > 30.0f && neighbor.Population() == 0.0f && valid)
-                                            tilePool.Add(neighbor);
-                                    }
+                                    if (neighbor.habitability > 30.0f && neighbor.Population() == 0.0f && valid)
+                                        tilePool.Add(neighbor);
                                 }
+
                             }
 
                             if (nationTiles.Count == tileNum)

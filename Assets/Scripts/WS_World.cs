@@ -33,21 +33,22 @@ public class WS_World : MonoBehaviour
     [HideInInspector] public float maxRiverStrength     = 0.0f;
     [HideInInspector] public float maxHabitability      = -200.0f;
     [HideInInspector] public float minHabitability      = 200.0f;
+    [HideInInspector] public static float maxGrowth            = -20000.0f;
+    [HideInInspector] public static float minGrowth            = 20000.0f;
 
 
     // Utility variables
-    public static float frameMult = 1.0f;
+    public static float frameMult = 100.0f;
     private float frameTime = (1.0f / 30.0f) * 1000.0f;
     private Stopwatch timer = new Stopwatch();
+    [HideInInspector] public Vector2 realSize = new Vector2();
+    bool render = false;
 
     // which information should be displayed in the map drawing
     public Texture2D hexTex = null;
     [HideInInspector] public Texture2D output = null;
     [HideInInspector] private SpriteRenderer spriteRenderer = null;
     [HideInInspector] public Color32[] pixels = null;
-
-    public WorldRenderMode renderMode = WorldRenderMode.BIOME;
-    public ResourceType resourceFilter = ResourceType.IRON;
 
     public void addNation(WS_Nation nation)
     {
@@ -70,23 +71,22 @@ public class WS_World : MonoBehaviour
         rivers          = new List<River>();
         nations         = new List<WS_Nation>();
         worldGenerator  = new WS_WorldGenerator();
-
-
+        
 
         // EVENTS (order is relevant!)
 
         // Population
         eventPool.Add(new FoodGenerationEvent());
         eventPool.Add(new FoodConsumptionEvent());
-        eventPool.Add(new ColonizationEvent());
         eventPool.Add(new MigrationEvent());
+        eventPool.Add(new ColonizationEvent());
         eventPool.Add(new RuralMigrationsEvent());
 
 
         // Culture
         eventPool.Add(new CultureStrengthEvent());
         eventPool.Add(new RulingCultureChangeEvent());
-        eventPool.Add(new SyncreticAssimilationEvent());
+        //eventPool.Add(new SyncreticAssimilationEvent());
 
 
         // TRAITS (order is not relevant)
@@ -159,6 +159,22 @@ public class WS_World : MonoBehaviour
         worldGenerator.Generate(this);                                              // execute world generation process
         worldGenerator.PopulateWorld(100);
 
+        foreach (WS_Nation nation in nations)
+        {
+            foreach (WS_Tile tile in nation.nationTiles)
+            {
+                if (tile.Population() <= 0.0f)
+                {
+                    nation.nationTiles.Remove(tile);
+                    tile.nation = null;
+                    return;
+                }
+                else
+                    tile.updateData();
+            }
+
+            nation.UpdateData();
+        }
 
         worldGenerator.CulturalizeWorld();
 
@@ -187,6 +203,9 @@ public class WS_World : MonoBehaviour
 
         output.SetPixels32(resetColorArray);
         output.Apply();
+
+        realSize = new Vector2(output.width / 100.0f, output.height / 100.0f);
+        transform.Translate(new Vector3(realSize.x / 2.0f, realSize.y / 2.0f, 0.0f));
     }
 
     private void Update()
@@ -208,14 +227,23 @@ public class WS_World : MonoBehaviour
                         else if (tiles[tileXIt][tileYIt].Population() > 0.0f)
                             eventPool[eventIt].Execute(tiles[tileXIt][tileYIt]);
 
-                        tiles[tileXIt][tileYIt].tileRenderer.Render();
+                        if(tiles[tileXIt][tileYIt].tileRenderer.Render())
+                            render = true;
                     }
                     tileYIt = 0;
                 }
                 tileXIt = 0;
             }
 
-            output.Apply();
+            if (render)
+            {
+                output.Apply();
+                render = false;
+            }
+
+            maxGrowth = -20000.0f;
+            minGrowth = 20000.0f;
+
             foreach (WS_Nation nation in nations)
             {
                 for (int i = 0; i < nation.nationTiles.Count; i++)
@@ -240,12 +268,4 @@ public class WS_World : MonoBehaviour
         foreach (WS_Nation nation in nations)
             nation.RecalculateAffinities();
     }
-}
-
-
-
-public class River
-{
-    public List<WS_Tile> path;
-    public string name = "";
 }

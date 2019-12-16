@@ -5,9 +5,9 @@ using UnityEngine;
 public class WS_Culture
 {
     public float urbanization = 100; // 10 / 300.0
-    public float FoodEfficiency = 1.1f;  // 1.3 / 10.0
+    public float FoodEfficiency = 1.35f;  // 1.3 / 10.0
     public float survivalism = 0.0f;  // -50.0 / 50.0
-    public float settlerCap = 5.0f;  
+    public float settlerCap = 3.0f;  
     public float nationSettlerCap = 1.0f;
     public float expansionBonus = 1.0f;
     public float growthBonus = 1.0f;  // 0.5 / 1.5
