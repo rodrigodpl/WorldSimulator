@@ -106,11 +106,11 @@ public class MigrationEvent : WS_BaseEvent
 }
         
 
-public class ColonizationEvent : WS_BaseEvent
+public class ColonizationnEvent : WS_BaseEvent
 {
     private WS_Tile destination = null;
 
-    public ColonizationEvent() { eventName = "Colonization"; module = EventModule.POPULATION; }
+    public ColonizationnEvent() { eventName = "Colonization"; module = EventModule.POPULATION; }
 
     protected override bool FireCheck()
     {

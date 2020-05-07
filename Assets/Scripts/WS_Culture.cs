@@ -2,140 +2,258 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
 public class WS_Culture
 {
-    public float urbanization = 100; // 10 / 300.0
-    public float FoodEfficiency = 1.35f;  // 1.3 / 10.0
-    public float survivalism = 0.0f;  // -50.0 / 50.0
-    public float settlerCap = 3.0f;  
-    public float nationSettlerCap = 1.0f;
-    public float expansionBonus = 1.0f;
-    public float growthBonus = 1.0f;  // 0.5 / 1.5
-    public float mortalityRate = 1.0f;  // 0.5 / 1.5
+    static int MAX_TRAITS_CULTURE = 10;
+    static int MIN_TRAITS_CULTURE = 3;
+    static int MAX_TRAITS_TRIBAL = 3;
+    static int MIN_TRAITS_TRIBAL = 1;
 
-    public float influence = 1.0f;  // 0.5 / 2.0
-    public float birthBonus = 0.0f;
+    public float FoodEfficiency = 1.15f;  
+    public float survivalism = 0.0f;  
+    public float expansionism = 0.0f;
+    public float healthcare = 0.05f;
+
+    public float influenceBonus = -1.0f;  
+    public float syncretism = 0.0f;
+    public float decadence = 0.0f;
+
+    public bool tribal = true;
 
     public Color cultureColor = Color.white;
 
-    public List<WS_Trait> traits = new List<WS_Trait>();
+    public WS_Tile capital = null;
 
-    public WS_Culture(int newTraits, WS_Culture base_culture = null)
+    public List<WS_CultureTrait> traits = new List<WS_CultureTrait>();
+
+
+    public WS_Culture(WS_Tile tile)  // tribal
     {
-        if (base_culture != null)
+        float selector = Random.Range(MIN_TRAITS_TRIBAL - traits.Count, MAX_TRAITS_TRIBAL - traits.Count);
+
+        while (selector > 0.0f)
         {
-            foreach (WS_Trait trait in base_culture.traits)
-                addTrait(trait);
+            addRandomTrait(tile);
+            selector = Random.Range(MIN_TRAITS_TRIBAL - traits.Count, MAX_TRAITS_TRIBAL - traits.Count);
         }
 
-        for (int i = 0; i < newTraits; i++)
-        {
-            float rand = Random.Range(0.0f, 3.0f);
-
-            if (rand < 1.0f)
-            {
-                if (!addRandomTrait())
-                    removeRandomTrait();
-            }
-            else if (rand < 2.0f)
-            {
-                if (!changeRandomTrait())
-                    addRandomTrait();
-            }
-            else
-            {
-                if (!removeRandomTrait())
-                    addRandomTrait();
-            }
-        }
-
-        if (base_culture != null)
-        {
-            Color prevColor = base_culture.cultureColor;
-            cultureColor = new Color(prevColor.r + Random.Range(-0.15f, 0.15f), prevColor.g + Random.Range(-0.15f, 0.15f), prevColor.b + Random.Range(-0.15f, 0.15f));
-        }
-        else
-            cultureColor = new Color(Random.Range(0.1f, 1.0f), Random.Range(0.1f, 1.0f), Random.Range(0.1f, 1.0f));
-
-        birthBonus += 20.0f;
+        capital = tile;
+        cultureColor = new Color(Random.Range(0.1f, 0.55f), Random.Range(0.2f, 1.0f), Random.Range(0.2f, 0.9f)); // brown tones
     }
 
-    public void addTrait(WS_Trait trait)
+
+    public WS_Culture(WS_Culture base_culture, WS_Tile tile)  // for culture births / cultural collapses
     {
-        WS_Trait newTrait = trait.Copy();
-        newTrait.setCulture(this);
-        newTrait.Apply();
-        traits.Add(newTrait);
+        tribal = false;
+        influenceBonus = 0.0f;
+
+        float selector = Random.Range(MIN_TRAITS_CULTURE - traits.Count, MAX_TRAITS_CULTURE - traits.Count);
+
+        foreach (WS_CultureTrait trait in base_culture.traits)
+        {
+            trait.Apply(this);
+            traits.Add(trait);
+        }
+
+        while (selector > 0.0f)
+        {
+            addRandomTrait(base_culture.capital);
+            selector = Random.Range(MIN_TRAITS_CULTURE - traits.Count, MAX_TRAITS_CULTURE - traits.Count);
+        }
+
+        selector = Random.Range(traits.Count - MAX_TRAITS_CULTURE, traits.Count - MIN_TRAITS_CULTURE);
+
+        while (selector < 0.0f)
+        {
+            removeRandomTrait(base_culture.capital);
+            selector = Random.Range(traits.Count - MAX_TRAITS_CULTURE, traits.Count - MIN_TRAITS_CULTURE);
+        }
+
+        capital = tile;
+        cultureColor = new Color(Random.Range(0.1f, 1.0f), Random.Range(0.1f, 1.0f), Random.Range(0.1f, 1.0f));
     }
 
-    public bool addRandomTrait()
+
+    public WS_Culture(WS_Culture base_culture_A, WS_Culture base_culture_B, WS_Tile tile)  // for cultural merges
     {
-        if (traits.Count == (int)TraitGroup.MAX_GROUPS)
-            return false;
+        tribal = false;
 
-        while (true)
+        int traitNum = (base_culture_A.traits.Count + base_culture_B.traits.Count) / 2;
+
+        for(int i = 0; i < traitNum; i++)
         {
-            int traitId = Mathf.FloorToInt(Random.Range(0.0f, WS_World.allTraits.Count - 0.01f));
+            bool valid_A = false;
+            bool valid_B = false;
 
-            bool valid = true;
 
-            foreach (WS_Trait trait in traits)
-                if (trait.Group() == WS_World.allTraits[traitId].Group())
+            if (base_culture_A.traits.Count < traitNum)
+                if (!traits.Contains(base_culture_A.traits[traitNum]))
                 {
-                    valid = false;
-                    break;
+                    valid_A = true;
+
+                    foreach(WS_CultureTrait ownedTrait in traits)
+                    {
+                        if(ownedTrait.Group() == base_culture_A.traits[traitNum].Group())
+                        {
+                            valid_A = false;
+                            break;
+                        }
+                    }
                 }
 
-            if (valid)
-            {
-                WS_Trait newTrait = WS_World.allTraits[traitId].Copy();
-                newTrait.setCulture(this);
-                newTrait.Apply();
-                traits.Add(newTrait);
+            if (base_culture_B.traits.Count < traitNum)
+                if (!traits.Contains(base_culture_B.traits[traitNum]))
+                {
+                    valid_B = true;
 
-                return true;
+                    foreach (WS_CultureTrait ownedTrait in traits)
+                    {
+                        if (ownedTrait.Group() == base_culture_B.traits[traitNum].Group())
+                        {
+                            valid_B = false;
+                            break;
+                        }
+                    }
+                }
+
+
+            if (valid_A && !valid_B)
+                traits.Add(base_culture_A.traits[traitNum]);
+
+            else if(!valid_A && valid_B)
+                traits.Add(base_culture_B.traits[traitNum]);
+
+            else if(valid_A && valid_B)
+            {
+                float selector = Random.Range(0.0f, 1.0f);
+                
+                if(selector < 0.5f)
+                    traits.Add(base_culture_A.traits[traitNum]);
+                else
+                    traits.Add(base_culture_B.traits[traitNum]);
+            }
+
+            if (valid_A || valid_B)
+                traits[traits.Count - 1].Apply(this);
+        }
+
+        for (int i = traits.Count; i < MIN_TRAITS_CULTURE; i++)
+            addRandomTrait(tile);
+
+        capital = tile;
+        cultureColor = (base_culture_A.cultureColor + base_culture_B.cultureColor) / 2.0f;
+    }
+
+
+    public bool addRandomTrait(WS_Tile tile)
+    {
+        if (traits.Count == (int)TraitGroup.MAX_GROUPS || traits.Count > (tribal ? MAX_TRAITS_TRIBAL : MAX_TRAITS_CULTURE))
+            return false;
+
+
+        List<WS_CultureTrait> possibleTraits = new List<WS_CultureTrait>();
+        float totalChance = 0.0f;
+
+        foreach (WS_CultureTrait trait in WS_World.cultureTraits)
+        {
+            if (traits.Contains(trait))
+                continue;
+
+            float chance = trait.Chance(tile);
+
+            if (chance > 0.0f)
+            {
+                totalChance += chance;
+                possibleTraits.Add(trait);
             }
         }
-    }
 
-    public bool removeRandomTrait()
-    {
-        if (traits.Count <= WS_WorldGenerator.minTraits)
-            return false;
 
-        int traitId = Mathf.FloorToInt(Random.Range(0.0f, traits.Count - 0.01f));
+        float selector = Random.Range(0.0f, totalChance);
 
-        traits[traitId].Reverse();
-        traits.RemoveAt(traitId);
-        return true;
-    }
-
-    public bool changeRandomTrait()
-    {
-        if (traits.Count == 0)
-            return false;
-
-        int traitId = Mathf.FloorToInt(Random.Range(0.0f, traits.Count - 0.01f));
-        TraitGroup removedGroup = traits[traitId].Group();
-
-        traits[traitId].Reverse();
-        traits.RemoveAt(traitId);
-
-        while (true)
+        foreach (WS_CultureTrait trait in possibleTraits)
         {
-            int newTraitId = Mathf.FloorToInt(Random.Range(0.0f, WS_World.allTraits.Count - 0.01f));
+            float chance = trait.Chance(tile);
 
-            foreach (WS_Trait trait in traits)
-                if (trait.Group() == WS_World.allTraits[newTraitId].Group() || trait.Group() == removedGroup)
-                    continue;
+            if (selector <= chance)
+            {
+                WS_CultureTrait removeTrait = null;
 
-            WS_Trait newTrait = WS_World.allTraits[newTraitId].Copy();
-            newTrait.setCulture(this);
-            newTrait.Apply();
-            traits.Add(newTrait);
+                foreach(WS_CultureTrait ownedTrait in traits)
+                {
+                    if(ownedTrait.Group() == trait.Group())
+                    {
+                        removeTrait = ownedTrait;
+                        break;
+                    }
+                }
 
-            return true;
+                if (removeTrait != null)
+                    traits.Remove(removeTrait);
+
+                trait.Apply(tile.culture);
+                traits.Add(trait);
+                return true;
+            }
+            else
+                selector -= chance;
         }
 
+        return false;
+    }
+
+
+    public bool removeRandomTrait(WS_Tile tile)
+    {
+        if (traits.Count < (tribal ? MIN_TRAITS_TRIBAL : MIN_TRAITS_CULTURE))
+            return false;
+
+        float totalChance = 0.0f;
+
+        foreach (WS_CultureTrait trait in traits)
+        {
+            float chance = trait.Chance(tile);
+
+            if (chance > 0.0f)
+                totalChance += 1.0f - chance;
+            
+        }
+
+        float selector = Random.Range(0.0f, totalChance);
+
+        foreach (WS_CultureTrait trait in traits)
+        {
+            float chance = trait.Chance(tile);
+
+            if (selector <= 1.0f - chance)
+            {
+                WS_CultureTrait removeTrait = trait;
+                trait.Reverse(tile.culture);
+                traits.Remove(removeTrait);
+                return true;
+            }
+            else
+                selector -= chance;
+        }
+
+        return false;
+    }
+
+
+    public bool changeRandomTrait(WS_Tile tile)
+    {
+        bool valid = false;
+
+        if (removeRandomTrait(tile))
+            if (addRandomTrait(tile))
+                valid = true;
+
+        else if (addRandomTrait(tile))
+                if (removeRandomTrait(tile))
+                    valid = true;
+
+        return valid;
     }
 }

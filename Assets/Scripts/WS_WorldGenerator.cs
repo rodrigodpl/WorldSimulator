@@ -81,10 +81,6 @@ public class WS_WorldGenerator
     public static int startingPop = 80000;
 
 
-    static public int minTraits = 3;
-    int maxStartingTraits = 5;
-
-
 
     public void CulturalizeWorld()
     {

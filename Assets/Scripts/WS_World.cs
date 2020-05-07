@@ -9,7 +9,7 @@ public class WS_World : MonoBehaviour
     // World Variables
     private WS_Tile[][] tiles               = null;     // tiles container
     private List<WS_BaseEvent> eventPool    = new List<WS_BaseEvent>();
-    public static List<WS_Trait> allTraits     = new List<WS_Trait>();
+    public static List<WS_CultureTrait> cultureTraits     = new List<WS_CultureTrait>();
     private WS_WorldGenerator worldGenerator   = null;     // world generator, which fills blank tiles with geographical data
 
     private List<River> rivers              = null;     // river container, River class definition at the bottom of this script
@@ -91,38 +91,25 @@ public class WS_World : MonoBehaviour
 
         // TRAITS (order is not relevant)
 
-        allTraits.Add(new SurvivalistsTrait());
-        allTraits.Add(new ResilientTrait());
-        allTraits.Add(new UnadaptableTrait());
-        allTraits.Add(new SybaritesTrait());
+        cultureTraits.Add(new SurvivalistsTrait());
+        cultureTraits.Add(new ResilientTrait());
+        cultureTraits.Add(new UnadaptableTrait());
+        cultureTraits.Add(new SybaritesTrait());
 
-        allTraits.Add(new UrbanitesTrait());
-        allTraits.Add(new CityDwellersTrait());
-        allTraits.Add(new VillagePeopleTrait());
-        allTraits.Add(new CountrymenTrait());
+        cultureTraits.Add(new MasterFarmersTrait());
+        cultureTraits.Add(new AgriculturalFocusedTrait());
+        cultureTraits.Add(new NeglectedFarmsTrait());
+        cultureTraits.Add(new IncompetentFarmersTrait());
 
-        allTraits.Add(new MasterFarmersTrait());
-        allTraits.Add(new AgriculturalFocusedTrait());
-        allTraits.Add(new NeglectedFarmsTrait());
-        allTraits.Add(new IncompetentFarmersTrait());
+        cultureTraits.Add(new FarAndBeyondTrait());
+        cultureTraits.Add(new ExpansionistsTrait());
+        cultureTraits.Add(new ShortHorizonsTrait());
+        cultureTraits.Add(new NothingLiketHomeTrait());
 
-        allTraits.Add(new FarAndBeyondTrait());
-        allTraits.Add(new ExpansionistsTrait());
-        allTraits.Add(new ShortHorizonsTrait());
-        allTraits.Add(new NothingLiketHomeTrait());
-
-        allTraits.Add(new BreedLikeRabbitsTrait());
-        allTraits.Add(new HighNatalityTrait());
-        allTraits.Add(new LowNatalityTrait());
-        allTraits.Add(new DwindlingPopulationTrait());
-
-        allTraits.Add(new HealthyTrait());
-        allTraits.Add(new DurableTrait());
-        allTraits.Add(new HighMortalityTrait());
-        allTraits.Add(new DecayingHealthTrait());
-
-        allTraits.Add(new SyncreticTrait());
-        allTraits.Add(new WelcomingTrait());
+        cultureTraits.Add(new HealthyTrait());
+        cultureTraits.Add(new DurableTrait());
+        cultureTraits.Add(new HighMortalityTrait());
+        cultureTraits.Add(new DecayingHealthTrait());
         
 
         for (int i = 0; i < sizeX; i++)

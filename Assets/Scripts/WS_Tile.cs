@@ -31,16 +31,26 @@ public class WS_Tile
 
     public Biome biome = Biome.MAX_BIOMES;
     public List<WS_Resource> Resources = new List<WS_Resource>();
-    //public GeographicalRegion;
 
+    //public GeographicalRegion;
     public WS_Tile erosionDirection = null;
     public List<WS_Tile> riverDirection =  new List<WS_Tile>();
 
     public bool seaBody = false;
 
     // Population Data
+    public float population = 0.0f;
+    public int farmers = 0;
+    public float foodUnits = 0.0f;
+    public int sanitation = 0;
+    public int storage = 0;
+    public float lastPopGrowth = 0.0f;
+    public WS_Culture culture = null;
     public float storedFood = 0.0f;
-    private float population = 0;
+
+    // change habitabilty
+
+    // old
     public float urbanPercentile = 0;
     public float settlerPercentile = 0.0f;
     public float lastCycleGrowth = 0.0f;
