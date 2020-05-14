@@ -11,12 +11,19 @@ public enum Biome
     ARID_DESERT, WATER, ICE, MAX_BIOMES
 }
 
+public class River
+{
+    public List<WS_Tile> path;
+    public string name = "";
+}
+
 public class WS_WorldGenerator 
 {
     //  Utility 
-    private WS_World world                     = null;     // pointer to the world container
+    private WS_World world                  = null;     // pointer to the world container
     private List<Generator> generators      = null;     // generator list, Generator class is at the bottom of the script
-    private int landWS_TileNum                 = 0;        // used for land mass calculations
+    private List<River> rivers              = null;                  // river container
+    private int landWS_TileNum              = 0;        // used for land mass calculations
 
     // Generation main variables
     public int shallowGenerators            = 3;        // 2 - 4        // shallow generators will create islands and archipelagos
@@ -25,6 +32,7 @@ public class WS_WorldGenerator
 
     public float landmassPercentage         = 0.35f;    // 30 - 80
     public float altitudeRandomizer         = 500.0f;   // 50 - 500
+
 
     // Generation secondary variables (only recommended for advanced users)
     public static bool lockPoles            = true;     // if true, land tiles will very rarely appear near the poles      
@@ -68,132 +76,102 @@ public class WS_WorldGenerator
     public static float riverAltEffect      = 1.5f;     // 0.5 - 2.5    // The higher the value, the more effect rivers will have on altitude
 
     public static float baseHabitability    = 100.0f;   // 50 - 150     // The higher the value, the more habitable the world will be
-    public static float habAltMultiplier    = 0.01f;    // 0.005 - 0.03 // The higher the value, the more uninhabitable higher tiles will be
-    public static float habTempMultiplier   = 5.0f;     // 2 - 10       // The higher the value, the more uninhabitable hot or cold tiles will be
-    public static float habHumMultiplier    = 0.66f;    // 0.1 - 2.5    // The higher the value, the more uninhabitable dry tiles will be
+    public static float habAltMultiplier    = 5.0f;    // 0.005 - 0.03 // The higher the value, the more uninhabitable higher tiles will be
+    public static float habTempMultiplier   = 2.0f;     // 2 - 10       // The higher the value, the more uninhabitable hot or cold tiles will be
+    public static float habHumMultiplier    = 1.0f;    // 0.1 - 2.5    // The higher the value, the more uninhabitable dry tiles will be
     public static float habWaterMultiplier  = 20.0f;    // 0 - 50       // The higher the value, the more habitable coastal and river tiles will be
 
 
-
-    public int avgNationSize = 10;
-    public float minNationSize = 0.5f;
-    public float maxNationSize = 3.0f;
-    public static int startingPop = 80000;
+    public int minCultureNum = 20;
+    public float advCulturePercentage = 0.35f;
+    public float minHabitability = 70.0f;
 
 
 
-    public void CulturalizeWorld()
+    public void PopulateWorld()
     {
-        foreach (WS_Nation nation in world.nations)
-        {
-            if (nation.rulingCulture != null)
-                continue;
+        List<WS_Culture> cultures = new List<WS_Culture>();
 
-            List<WS_Nation> cultureGroup = new List<WS_Nation>();
-            cultureGroup.Add(nation);
-
-            WS_Culture baseCulture = new WS_Culture(maxStartingTraits);
-            nation.SetCulture(baseCulture);
-
-            baseCulture.cultureColor = new Color(Random.Range(0.2f, 1.0f), Random.Range(0.2f, 1.0f), Random.Range(0.2f, 1.0f));
-
-            for (int i = 0; i < cultureGroup.Count; i++)
-            {
-                foreach (WS_Tile border in cultureGroup[i].border)
-                    foreach (WS_Tile neighbor in border.Neighbors())
-                        if (neighbor.nation != cultureGroup[i] && neighbor.Population() > 0.0f)
-                        {
-                            if (neighbor.nation.rulingCulture == null)
-                            {
-                                cultureGroup.Add(neighbor.nation);
-
-                                WS_Culture newCulture = new WS_Culture(1, baseCulture);
-                                neighbor.nation.SetCulture(newCulture);
-                            }
-                        }
-            }
-            
-
-        }
-        
-
-        foreach (WS_Nation nation in world.nations)
-            foreach (WS_Nation other in world.nations)
-            {
-                WS_Affinity affinity = nation.getAffinity(other);
-                affinity.CalculateStance();
-            }
-    }
-
-    public void PopulateWorld(int numNations)
-    {
-        while (numNations > 0)
+        while (cultures.Count < minCultureNum)
         {
             for (int i = 0; i < WS_World.sizeX; i++)
                 for (int j = 0; j < WS_World.sizeY; j++)
                 {
-                    if (numNations == 0)
-                        return;
-
                     WS_Tile tile = world.GetTile(new Vector2Int(i, j));
 
-                    if (!tile.seaBody && tile.habitability > world.maxHabitability / 2.0f && tile.Population() == 0.0f)
+
+                    if (!tile.seaBody && tile.habitability >= minHabitability && tile.population == 0.0f)
                     {
-                        if (Random.Range(0.0f, 100.0f) < ((tile.habitability - (world.maxHabitability / 2.0f)) / 15.0f))
+                        tile.population += tile.habitability * 50.0f * Random.Range(0.5f, 2.0f);
+                        tile.farmers = (int)Mathf.CeilToInt(tile.population / 1000.0f);
+                    }
+
+                    if (tile.population > 1000.0f && tile.culture == null)
+                    {
+                        if (Random.Range(0.0f, 1.0f) < tile.population / 500000)
                         {
-                            foreach (WS_Tile neighbor in tile.Neighbors())
-                            {
-                                if (neighbor.habitability > tile.habitability)
-                                    tile = neighbor;
-                            }
+                            tile.culture = new WS_Culture(tile);
+                            cultures.Add(tile.culture);
+                        }
+                    }
+                }
+        }
 
-                            List<WS_Tile> nationTiles = new List<WS_Tile>();
-                            List<WS_Tile> tilePool = new List<WS_Tile>();
 
-                            nationTiles.Add(tile);
+        int advCultures = Mathf.FloorToInt(advCulturePercentage * cultures.Count);
 
-                            int tileNum = Mathf.FloorToInt(Random.Range(avgNationSize * minNationSize, avgNationSize * maxNationSize));
+        for(int i = 0; i < advCultures; i++)
+        { 
+            int index = Mathf.FloorToInt(Random.Range(0.0f, cultures.Count - 0.01f));
 
-                            foreach (WS_Tile neighbor in tile.Neighbors())
-                            {
-                                if (neighbor.habitability > 30.0f && neighbor.Population() == 0.0f)
-                                    tilePool.Add(neighbor);
-                            }
+            if (cultures[index].tribal)
+            {
+                WS_Culture oldCulture = cultures[index];
+                WS_Tile capital = oldCulture.capital;
 
-                            while (tilePool.Count > 0 && nationTiles.Count < tileNum)
-                            {
-                                WS_Tile newTile = tilePool[Mathf.FloorToInt(Random.Range(0.0f, tilePool.Count - 0.01f))];
+                WS_Culture newCulture = new WS_Culture(oldCulture, oldCulture.capital);
 
-                                nationTiles.Add(newTile);
-                                tilePool.Remove(newTile);
+                oldCulture.capital.culture = newCulture;
+                cultures.Add(newCulture);
+                cultures.Remove(oldCulture);
 
-                                foreach (WS_Tile neighbor in newTile.Neighbors())
-                                {
-                                    bool valid = true;
-                                    foreach (WS_Tile nationTile in nationTiles)
-                                        if (nationTile == neighbor)
-                                            valid = false;
+                WS_Nation newNation = new WS_Nation();
+                newNation.nationColor = newCulture.cultureColor;
+                capital.nation = newNation;
+                newNation.capital = capital;
+                capital.nation.nationTiles.Add(capital);
+                capital.nation.rulingCulture = capital.culture;
 
-                                    if (neighbor.habitability > 30.0f && neighbor.Population() == 0.0f && valid)
-                                        tilePool.Add(neighbor);
-                                }
+                advCultures--;
+            }
+        }
 
-                            }
 
-                            if (nationTiles.Count == tileNum)
-                            {
-                                WS_Nation nation = new WS_Nation();
-                                nation.nationTiles = nationTiles;
-                                nation.Populate();
-                                world.addNation(nation);
-                                numNations--;
-                            }
+        for (int i = 0; i < WS_World.sizeX; i++)
+            for (int j = 0; j < WS_World.sizeY; j++)
+            {
+                WS_Tile tile = world.GetTile(new Vector2Int(i, j));
 
+                if (tile.population > 0.0f && tile.culture == null)
+                {
+                    WS_Culture nearestCulture = null;
+                    int minDist = int.MaxValue;
+
+                    foreach (WS_Culture culture in cultures)
+                    {
+                        int distance = tile.DistanceTo(culture.capital) + Mathf.FloorToInt(Random.Range(-1.4f, 1.4f));
+
+                        if (distance < minDist)
+                        {
+                            minDist = distance;
+                            nearestCulture = culture;
                         }
                     }
 
+                    tile.culture = nearestCulture;
                 }
-        }
+            }
+
     }
 
 
@@ -213,6 +191,8 @@ public class WS_WorldGenerator
         int generatorNum = (shallowGenerators + continentalGenerators + alpineGenerators);  // amount of generators required
 
         generators = new List<Generator>();
+        rivers = new List<River>();
+
         for (int i = 0; i < generatorNum;)      // create generators
         {
             Vector2Int random_pos;
@@ -636,7 +616,7 @@ public class WS_WorldGenerator
                 River new_river = new River();
                 riverPath.Reverse();
                 new_river.path = riverPath;
-                world.getRivers().Add(new_river);   // reverse the path and store the river
+                rivers.Add(new_river);   // reverse the path and store the river
 
                 for (int i = 0; i < riverPath.Count; i++)
                 {
@@ -667,7 +647,7 @@ public class WS_WorldGenerator
         // On this steps, rivers will apply water erosion by lowering the altitude and increasing humidity of all the tiles 
         // inside the river's path-
 
-        foreach (River river in world.getRivers())
+        foreach (River river in rivers)
         {
             foreach (WS_Tile tile in river.path)
             {
@@ -789,7 +769,7 @@ public class WS_WorldGenerator
         // altitude and is no longer a sea tile, causing a river ending in a land tile. To avoid this, end tiles of all rivers are 
         // checked. If a river ends in land tile, it will grow until reaching a water tile again.
 
-        foreach (River river in world.getRivers())
+        foreach (River river in rivers)
         {
             WS_Tile destination = river.path[river.path.Count - 1];   // get the end tile
 
@@ -1022,13 +1002,32 @@ public class WS_WorldGenerator
                 // HABITABILITY
 
                 if (tile.seaBody)
-                    tile.habitability = 0.0f;       // if water tile, uninhabitable
+                    tile.habitability = -100.0f;       // if water tile, uninhabitable
                 else
                 {
-                    tile.habitability = baseHabitability;                                               // base habitability
+                    switch (tile.biome)         // biome
+                    {
+                        case Biome.POLAR: tile.habitability = 50.0f; break;
+                        case Biome.TUNDRA: tile.habitability = 70.0f; break;
+                        case Biome.BOREAL_FOREST: tile.habitability = 60.0f; break;
+                        case Biome.ALPINE: tile.habitability = 60.0f; break;
+                        case Biome.ALPINE_SHRUBLAND: tile.habitability = 70.0f; break;
+                        case Biome.ALPINE_FOREST: tile.habitability = 70.0f; break;
+                        case Biome.TEMPERATE_GRASSLAND: tile.habitability = 120.0f; break;
+                        case Biome.TEMPERATE_FOREST: tile.habitability = 80.0f; break;
+                        case Biome.WETLANDS: tile.habitability = 120.0f; break;
+                        case Biome.SAVANNAH: tile.habitability = 80.0f; break;
+                        case Biome.TEMPERATE_DESERT: tile.habitability = 70.0f; break;
+                        case Biome.TROPICAL_GRASSLAND: tile.habitability = 100.0f; break;
+                        case Biome.TROPICAL_JUNGLE: tile.habitability = 70.0f; break;
+                        case Biome.ARID_DESERT: tile.habitability = 50.0f; break;
+                    }
+
+
                     tile.habitability -= Mathf.Abs(tile.avgTemperature - 21.0f) * habTempMultiplier;    // temperature
                     tile.habitability -= Mathf.Abs(tile.humidity - 70.0f) * habHumMultiplier;           // humidity
-                    tile.habitability -= (tile.altitude - 1000.0f) * habAltMultiplier;                  // altitude
+                    tile.habitability -= (tile.altitude / 1000.0f) * habAltMultiplier;                  // altitude
+                    tile.habitability += 20.0f;
 
 
                     if (!float.IsNaN(tile.riverStrength))       // river adjacent
@@ -1061,28 +1060,10 @@ public class WS_WorldGenerator
                                 break;
                             }
                     }
-                }
 
-                switch (tile.biome)         // biome
-                {
-                    case Biome.POLAR:               tile.habitability -= 40.0f; break;
-                    case Biome.TUNDRA:              tile.habitability -= 30.0f; break;
-                    case Biome.BOREAL_FOREST:       tile.habitability -= 25.0f; break;
-                    case Biome.ALPINE:              tile.habitability -= 30.0f; break;
-                    case Biome.ALPINE_SHRUBLAND:    tile.habitability -= 25.0f; break;
-                    case Biome.ALPINE_FOREST:       tile.habitability -= 25.0f; break;
-                    case Biome.TEMPERATE_GRASSLAND: tile.habitability += 25.0f; break;
-                    case Biome.TEMPERATE_FOREST:    tile.habitability += 10.0f; break;
-                    case Biome.WETLANDS:            tile.habitability += 10.0f; break;
-                    case Biome.SAVANNAH:            tile.habitability += 5.0f; break;
-                    case Biome.TEMPERATE_DESERT:    tile.habitability -= 30.0f; break;
-                    case Biome.TROPICAL_GRASSLAND:  tile.habitability += 20.0f; break;
-                    case Biome.TROPICAL_JUNGLE:     tile.habitability -= 20.0f; break;
-                    case Biome.ARID_DESERT:         tile.habitability -= 35.0f; break;
+                    if (tile.habitability > world.maxHabitability) world.maxHabitability = tile.habitability;
+                    if (tile.habitability < world.minHabitability) world.minHabitability = tile.habitability;
                 }
-
-                if (tile.habitability > world.maxHabitability) world.maxHabitability = tile.habitability;
-                if (tile.habitability < world.minHabitability) world.minHabitability = tile.habitability;
 
             }
 

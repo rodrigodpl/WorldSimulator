@@ -9,13 +9,8 @@ public class WS_TileRenderer
     private WS_Tile tile                    = null;                     // pointer to owner tile
     private Color32 renderColor = new Color32();
     private Color32 lastRenderColor = new Color32();
-    //private LineRenderer lineRenderer       = null;                     // tile's line renderer
-    private AnimationCurve erosionCurve     = new AnimationCurve();     // curve used in erosion render mode
-    private AnimationCurve defaultCurve     = new AnimationCurve();     // curve used in river render mode
     private Vector2Int renderPos = new Vector2Int();
-    
 
-    private bool wasSelected = false;
 
     public void setRenderPos(Vector2Int _renderPos)
     {
@@ -32,16 +27,16 @@ public class WS_TileRenderer
         tile = _tile;
     }
 
-    public bool Render()
+    public void Render()
     {
-        if (tile.seaBody && (WS_RenderPanel.rendermode != WorldRenderMode.GEOGRAPHY || WS_RenderPanel.geoFilter != GeoFilter.BIOME))
-            return false;
+        if (tile.seaBody)
+            return;
 
-        switch (WS_RenderPanel.rendermode)
+        switch (WS_FilterPanel.rendermode)
         {
             case WorldRenderMode.GEOGRAPHY:
 
-                switch (WS_RenderPanel.geoFilter)
+                switch (WS_FilterPanel.geoFilter)
                 {
                     case GeoFilter.ALTITUDE:
                         float relativeAltitudeLand = tile.altitude / world.highestPoint;
@@ -103,49 +98,37 @@ public class WS_TileRenderer
 
             case WorldRenderMode.POPULATION:
 
-                switch (WS_RenderPanel.popFilter)
+                switch (WS_FilterPanel.popFilter)
                 {
                     case PopFilter.NATION:  // set color based on habitability, red to black if negative, black to green if positive
 
 
                         if (tile.nation != null)
                         {
-                            float alpha = 1.0f;
-
-                            if (tile.settlement == Settlement.TOWN) alpha = 0.75f;
-                            else if (tile.settlement == Settlement.CITY) alpha = 0.5f;
-
-                            Color color = tile.nation.nationColor;
-                            color.a = alpha;
-
-                            renderColor = color;
+                            if (tile == tile.nation.capital)
+                                renderColor = tile.nation.nationColor - (Color.white * 0.1f);
+                            else
+                                renderColor = tile.nation.nationColor;
                         }
                         else
                             renderColor = Color.white;
 
                         break;
-                        
+
                     case PopFilter.GROWTH:
 
-                        if (tile.Population() > 0.0f)
+                        if (tile.population > 0.0f)
                         {
-                            if (tile.lastCycleGrowth > 0.0f)
-                                renderColor = new Color(0.0f, tile.lastCycleGrowth / WS_World.maxGrowth, 0.0f, 1.0f);
+                            if (tile.lastPopGrowth > 0.0f)
+                                renderColor = new Color(0.0f, tile.lastPopGrowth / WS_World.maxGrowth, 0.0f, 1.0f);
                             else
-                                renderColor = new Color(Mathf.Abs(tile.lastCycleGrowth / WS_World.minGrowth), 0.0f, 0.0f, 1.0f);
+                                renderColor = new Color(Mathf.Abs(tile.lastPopGrowth / WS_World.minGrowth), 0.0f, 0.0f, 1.0f);
                         }
                         else
                             renderColor = Color.white;
 
                         break;
 
-                    case PopFilter.URBAN_PERCENTILE:
-
-                        if (tile.Population() > 0.0f)
-                            renderColor = new Color(0.3f, tile.urbanPercentile, 0.0f, 1.0f);
-                        else
-                            renderColor = Color.white;
-                        break;
                 }
 
                 break;
@@ -153,22 +136,42 @@ public class WS_TileRenderer
             case WorldRenderMode.CULTURE:
 
 
-                switch (WS_RenderPanel.culFilter)
+                switch (WS_FilterPanel.culFilter)
                 {
                     case CulFilter.CULTURE:  // set color based on habitability, red to black if negative, black to green if positive
 
-                        if (tile.mainCulture != null)
-                            renderColor = tile.mainCulture.cultureColor;
+                        if (tile.culture != null)
+                            renderColor = tile.culture.cultureColor;
                         else
                             renderColor = Color.white;
 
                         break;
                 }
-                
+
+                break;
+
+
+            case WorldRenderMode.DISASTER:
+
+
+                if (tile.disaster != null)
+                {
+                    switch (tile.disaster.Type())
+                    {
+                        case DisasterType.DROUGHT:  renderColor = Color.yellow; break;
+                        case DisasterType.FLOOD:    renderColor = Color.cyan; break;
+                        case DisasterType.TSUNAMI:  renderColor = Color.red; break;
+                        case DisasterType.PLAGUE:   renderColor = Color.gray; break;
+                    }
+                }
+                else
+                    renderColor = Color.white;
+
                 break;
         }
 
-        if (!lastRenderColor.Equals(renderColor) || (wasSelected && WS_TilePanel.selectedTile != tile))
+
+        if (WS_TilePanel.selectedTile == tile)
         {
             lastRenderColor = renderColor;
 
@@ -176,31 +179,27 @@ public class WS_TileRenderer
                 for (int y = 0; y < world.hexTex.height; y++)
                 {
                     if (world.pixels[(y * world.hexTex.height) + x].a > 0)
-                        world.output.SetPixel(renderPos.x + x, renderPos.y + y, renderColor);
-                }
-
-            wasSelected = false;
-            return true;
-        }
-        else if (WS_TilePanel.selectedTile == tile)
-        {
-            wasSelected = true;
-
-            for (int x = 0; x < world.hexTex.width; x++)
-                for (int y = 0; y < world.hexTex.height; y++)
-                {
-                    if (world.pixels[(y * world.hexTex.height) + x].a > 0)
                     {
-                        if(world.pixels[(y * world.hexTex.height) + x].a > 240)
+                        if (world.pixels[(y * world.hexTex.height) + x].a > 240)
                             world.output.SetPixel(renderPos.x + x, renderPos.y + y, renderColor);
                         else
                             world.output.SetPixel(renderPos.x + x, renderPos.y + y, Color.black);
                     }
                 }
 
-            return true;
         }
-        return false;
+        else if (!lastRenderColor.Equals(renderColor))
+        {
+            lastRenderColor = renderColor;
+
+            for (int x = 0; x < world.hexTex.width; x++)
+                for (int y = 0; y < world.hexTex.height; y++)
+                {
+
+                    if (world.pixels[(y * world.hexTex.height) + x].a > 0)
+                        world.output.SetPixel(renderPos.x + x, renderPos.y + y, renderColor);
+                }
+        }
     }
 }
 

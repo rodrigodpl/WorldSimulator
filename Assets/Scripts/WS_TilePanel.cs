@@ -3,22 +3,57 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum TilePages { GEO, POP, CUL, TEC }
+
 public class WS_TilePanel : MonoBehaviour
 {
     public static WS_Tile selectedTile = null;
 
-    Text popText = null;
-    Text urbanText = null;
+    private GameObject GeoPage = null;
+    private GameObject PopPage = null;
+    private GameObject CulPage = null;
+    private GameObject TecPage = null;
+
+    private GameObject lastPage = null;
+
+    private Outline GeoTabOutline = null;
+    private Outline PopTabOutline = null;
+    private Outline CulTabOutline = null;
+    private Outline TecTabOutline = null;
+
+    private Outline lastOutline = null;
 
     void Start()
     {
-        popText = transform.Find("Variable/Population").GetComponent<Text>();
-        urbanText = transform.Find("Variable/UrbanPer").GetComponent<Text>();
+        GeoTabOutline = transform.GetChild(0).GetChild(0).GetComponent<Outline>();
+        PopTabOutline = transform.GetChild(0).GetChild(1).GetComponent<Outline>();
+        CulTabOutline = transform.GetChild(0).GetChild(2).GetComponent<Outline>();
+        TecTabOutline = transform.GetChild(0).GetChild(3).GetComponent<Outline>();
+
+        GeoPage = transform.GetChild(2).gameObject;
+        PopPage = transform.GetChild(3).gameObject;
+        CulPage = transform.GetChild(4).gameObject;
+        TecPage = transform.GetChild(5).gameObject;
+
+        lastPage = GeoPage;
+        lastOutline = GeoTabOutline;
     }
 
-    private void Update()
+    public void setPage(int page)
     {
-        popText.text = selectedTile.Population().ToString("F2");
-        urbanText.text = selectedTile.urbanPercentile.ToString("F2");
+        if (page != 0 && selectedTile.population <= 0.0f)
+            return;
+
+        lastPage.SetActive(false);
+        lastOutline.enabled = false;
+
+        switch ((TilePages)page)
+        {
+            case TilePages.GEO: GeoPage.SetActive(true); lastPage = GeoPage; GeoTabOutline.enabled = true; lastOutline = GeoTabOutline; break;
+            case TilePages.POP: PopPage.SetActive(true); lastPage = PopPage; PopTabOutline.enabled = true; lastOutline = PopTabOutline; break;
+            case TilePages.CUL: CulPage.SetActive(true); lastPage = CulPage; CulTabOutline.enabled = true; lastOutline = CulTabOutline; break;
+            case TilePages.TEC: TecPage.SetActive(true); lastPage = TecPage; TecTabOutline.enabled = true; lastOutline = TecTabOutline; break;
+        }
     }
+
 }

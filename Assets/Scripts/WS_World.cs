@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics;
 
+using CultureTraits;
 
 public class WS_World : MonoBehaviour
 {
@@ -10,18 +11,11 @@ public class WS_World : MonoBehaviour
     private WS_Tile[][] tiles               = null;     // tiles container
     private List<WS_BaseEvent> eventPool    = new List<WS_BaseEvent>();
     public static List<WS_CultureTrait> cultureTraits     = new List<WS_CultureTrait>();
+    public static List<WS_BaseDisaster> disasters = new List<WS_BaseDisaster>();
     private WS_WorldGenerator worldGenerator   = null;     // world generator, which fills blank tiles with geographical data
-
-    private List<River> rivers              = null;     // river container, River class definition at the bottom of this script
-    public List<WS_Nation> nations             = null;     // river container, River class definition at the bottom of this script
 
     public static int sizeX                 = 200;      // number of columns in the map
     public static int sizeY                 = 100;      // number of rows in the map
-    private int eventIt                     = 0;
-    private int tileXIt                     = 0;
-    private int tileYIt                     = 0;
-    private int longCounter                 = 0;
-
     
     // Rendering  Variables
     [HideInInspector] public float lowestPoint          = 0.0f;         // all these variables are used for reference when drawing 
@@ -33,64 +27,60 @@ public class WS_World : MonoBehaviour
     [HideInInspector] public float maxRiverStrength     = 0.0f;
     [HideInInspector] public float maxHabitability      = -200.0f;
     [HideInInspector] public float minHabitability      = 200.0f;
-    [HideInInspector] public static float maxGrowth            = -20000.0f;
-    [HideInInspector] public static float minGrowth            = 20000.0f;
+    [HideInInspector] public static float maxGrowth     = -20000.0f;
+    [HideInInspector] public static float minGrowth     = 20000.0f;
 
 
     // Utility variables
-    public static float frameMult = 100.0f;
-    private float frameTime = (1.0f / 30.0f) * 1000.0f;
-    private Stopwatch timer = new Stopwatch();
     [HideInInspector] public Vector2 realSize = new Vector2();
-    bool render = false;
-
-    // which information should be displayed in the map drawing
     public Texture2D hexTex = null;
     [HideInInspector] public Texture2D output = null;
     [HideInInspector] private SpriteRenderer spriteRenderer = null;
     [HideInInspector] public Color32[] pixels = null;
 
-    public void addNation(WS_Nation nation)
-    {
-        nations.Add(nation);
-    }
+    public static SimulationSpeed speed = SimulationSpeed.NORMAL;
+    public static int year = -2000;
+    public Stopwatch timer = new Stopwatch();
 
     public WS_Tile GetTile(Vector2Int position)                        // returns a tile from the map with its array position
     {
         return tiles[position.x][position.y];
     }
 
-    public List<River> getRivers()                                  // returns river list
-    {
-        return rivers;
-    }
-
     void Start()
     {
         tiles           = new WS_Tile[sizeX][];                    // initialize world
-        rivers          = new List<River>();
-        nations         = new List<WS_Nation>();
         worldGenerator  = new WS_WorldGenerator();
         
 
         // EVENTS (order is relevant!)
 
         // Population
-        eventPool.Add(new FoodGenerationEvent());
-        eventPool.Add(new FoodConsumptionEvent());
-        eventPool.Add(new MigrationEvent());
+        eventPool.Add(new PopulationGrowthEvent());
         eventPool.Add(new ColonizationEvent());
-        eventPool.Add(new RuralMigrationsEvent());
-
 
         // Culture
-        eventPool.Add(new CultureStrengthEvent());
-        eventPool.Add(new RulingCultureChangeEvent());
-        //eventPool.Add(new SyncreticAssimilationEvent());
+        eventPool.Add(new CultureBirthEvent());
+        eventPool.Add(new CulturalAdoptionEvent());
+        eventPool.Add(new CulturalMergeEvent());
+        eventPool.Add(new CulturalEvolutionEvent());
+        eventPool.Add(new CulturalCollapseEvent());
+
+        // Disaster Events
+        eventPool.Add(new DisasterTriggerEvent());
+        eventPool.Add(new DisasterEndEvent());
+        eventPool.Add(new DisasterSpreadEvent());
+
+
+
+        // Disasters
+        disasters.Add(new DroughtDisaster());
+        disasters.Add(new FloodDisaster());
+        disasters.Add(new TsunamiDisaster());
+        disasters.Add(new PlagueDisaster());
 
 
         // TRAITS (order is not relevant)
-
         cultureTraits.Add(new SurvivalistsTrait());
         cultureTraits.Add(new ResilientTrait());
         cultureTraits.Add(new UnadaptableTrait());
@@ -110,7 +100,18 @@ public class WS_World : MonoBehaviour
         cultureTraits.Add(new DurableTrait());
         cultureTraits.Add(new HighMortalityTrait());
         cultureTraits.Add(new DecayingHealthTrait());
-        
+
+        cultureTraits.Add(new InfluentialTrait());
+        cultureTraits.Add(new OutwardnessTrait());
+        cultureTraits.Add(new InwardnessTrait());
+        cultureTraits.Add(new IsolationistsTrait());
+
+        cultureTraits.Add(new SyncreticTrait());
+        cultureTraits.Add(new TolerantTrait());
+        cultureTraits.Add(new IntolerantTrait());
+        cultureTraits.Add(new RepressiveTrait());
+
+
 
         for (int i = 0; i < sizeX; i++)
         {
@@ -143,35 +144,9 @@ public class WS_World : MonoBehaviour
                 for (int j = 0; j < sizeY; j++)
                     tiles[i][j].Neighbors(r);                           // Pre-load all tiles' neighbors
 
+
         worldGenerator.Generate(this);                                              // execute world generation process
-        worldGenerator.PopulateWorld(100);
-
-        foreach (WS_Nation nation in nations)
-        {
-            foreach (WS_Tile tile in nation.nationTiles)
-            {
-                if (tile.Population() <= 0.0f)
-                {
-                    nation.nationTiles.Remove(tile);
-                    tile.nation = null;
-                    return;
-                }
-                else
-                    tile.updateData();
-            }
-
-            nation.UpdateData();
-        }
-
-        worldGenerator.CulturalizeWorld();
-
-        foreach (WS_Nation nation in nations)
-        {
-            foreach (WS_Tile tile in nation.nationTiles)
-                tile.updateData();
-
-            nation.UpdateData();
-        }
+        worldGenerator.PopulateWorld();
 
 
         output = new Texture2D(Mathf.CeilToInt(hexTex.width * sizeX * 0.84f), Mathf.CeilToInt(hexTex.height * sizeY * 0.75f), TextureFormat.RGBA32, false);
@@ -193,66 +168,57 @@ public class WS_World : MonoBehaviour
 
         realSize = new Vector2(output.width / 100.0f, output.height / 100.0f);
         transform.Translate(new Vector3(realSize.x / 2.0f, realSize.y / 2.0f, 0.0f));
+
+        UpdateWorld();
     }
 
     private void Update()
     {
-        timer.Start();
-        while (true)
+        for (int tileXIt = 0; tileXIt < sizeX; tileXIt++)
+            for (int tileYIt = 0; tileYIt < sizeY; tileYIt++)
+                tiles[tileXIt][tileYIt].tileRenderer.Render();
+
+        output.Apply();
+    }
+
+    private void UpdateWorld()
+    {
+
+        float time = 0.0f;
+        switch (speed)
         {
-            for (; eventIt < eventPool.Count; eventIt++)
+            case SimulationSpeed.SLOW: time = 2.0f; break;
+            case SimulationSpeed.NORMAL: time = 1.0f; break;
+            case SimulationSpeed.FAST: time = 0.5f; break;
+            case SimulationSpeed.FASTEST: time = 0.1f; break;
+        }
+
+        if (time == 0.0f)  // PAUSED
+        {
+            Invoke("UpdateWorld", 0.1f);
+            return;
+        }
+
+        timer.Start();
+
+        foreach (WS_BaseEvent Event in eventPool)
+        {
+            for (int tileXIt = 0; tileXIt < sizeX; tileXIt++)
             {
-                for (; tileXIt < sizeX; tileXIt++)
+                for (int tileYIt = 0; tileYIt < sizeY; tileYIt++)
                 {
-                    for (; tileYIt < sizeY; tileYIt++)
-                    {
-                        if (timer.ElapsedMilliseconds > frameTime)
-                        {
-                            timer.Reset();
-                            return;
-                        }
-                        else if (tiles[tileXIt][tileYIt].Population() > 0.0f)
-                            eventPool[eventIt].Execute(tiles[tileXIt][tileYIt]);
-
-                        if(tiles[tileXIt][tileYIt].tileRenderer.Render())
-                            render = true;
-                    }
-                    tileYIt = 0;
+                    if (tiles[tileXIt][tileYIt].population > 0.0f)
+                        Event.Execute(tiles[tileXIt][tileYIt]);
                 }
-                tileXIt = 0;
-            }
-
-            if (render)
-            {
-                output.Apply();
-                render = false;
-            }
-
-            maxGrowth = -20000.0f;
-            minGrowth = 20000.0f;
-
-            foreach (WS_Nation nation in nations)
-            {
-                for (int i = 0; i < nation.nationTiles.Count; i++)
-                    nation.nationTiles[i].updateData();
-
-                nation.UpdateData();
-            }
-
-            eventIt = 0;
-            longCounter++;
-
-            if(longCounter > 12)
-            {
-                LongUpdate();
-                longCounter = 0;
             }
         }
+
+        maxGrowth = float.MinValue;
+        minGrowth = float.MaxValue;
+
+        year++;
+
+        Invoke("UpdateWorld", time);
     }
-    
-    void LongUpdate()
-    {
-        foreach (WS_Nation nation in nations)
-            nation.RecalculateAffinities();
-    }
+  
 }

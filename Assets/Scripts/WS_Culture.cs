@@ -2,21 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
+using CultureTraits;
 
 public class WS_Culture
 {
-    static int MAX_TRAITS_CULTURE = 10;
-    static int MIN_TRAITS_CULTURE = 3;
-    static int MAX_TRAITS_TRIBAL = 3;
-    static int MIN_TRAITS_TRIBAL = 1;
+    static float MAX_TRAITS_CULTURE = 3.0f;
+    static float MIN_TRAITS_CULTURE = 3.0f;
+    static float MAX_TRAITS_TRIBAL = 3.0f;
+    static float MIN_TRAITS_TRIBAL = 1.0f;
 
     public float FoodEfficiency = 1.15f;  
     public float survivalism = 0.0f;  
     public float expansionism = 0.0f;
     public float healthcare = 0.05f;
 
-    public float influenceBonus = -1.0f;  
+    public float influenceBonus = -3.0f;  
     public float syncretism = 0.0f;
     public float decadence = 0.0f;
 
@@ -27,6 +27,8 @@ public class WS_Culture
     public WS_Tile capital = null;
 
     public List<WS_CultureTrait> traits = new List<WS_CultureTrait>();
+
+    public bool merged = false;
 
 
     public WS_Culture(WS_Tile tile)  // tribal
@@ -40,7 +42,7 @@ public class WS_Culture
         }
 
         capital = tile;
-        cultureColor = new Color(Random.Range(0.1f, 0.55f), Random.Range(0.2f, 1.0f), Random.Range(0.2f, 0.9f)); // brown tones
+        cultureColor = new Color(Random.Range(0.1f, 0.35f), Random.Range(0.1f, 0.35f), Random.Range(0.1f, 0.35f)); // dark tones
     }
 
 
@@ -72,13 +74,14 @@ public class WS_Culture
         }
 
         capital = tile;
-        cultureColor = new Color(Random.Range(0.1f, 1.0f), Random.Range(0.1f, 1.0f), Random.Range(0.1f, 1.0f));
+        cultureColor = new Color(Random.Range(0.55f, 0.9f), Random.Range(0.55f, 0.9f), Random.Range(0.55f, 0.9f));
     }
 
 
     public WS_Culture(WS_Culture base_culture_A, WS_Culture base_culture_B, WS_Tile tile)  // for cultural merges
     {
         tribal = false;
+        merged = true;
 
         int traitNum = (base_culture_A.traits.Count + base_culture_B.traits.Count) / 2;
 
@@ -88,7 +91,7 @@ public class WS_Culture
             bool valid_B = false;
 
 
-            if (base_culture_A.traits.Count < traitNum)
+            if (traitNum < base_culture_A.traits.Count)
                 if (!traits.Contains(base_culture_A.traits[traitNum]))
                 {
                     valid_A = true;
@@ -103,7 +106,7 @@ public class WS_Culture
                     }
                 }
 
-            if (base_culture_B.traits.Count < traitNum)
+            if (traitNum < base_culture_B.traits.Count)
                 if (!traits.Contains(base_culture_B.traits[traitNum]))
                 {
                     valid_B = true;
@@ -193,7 +196,7 @@ public class WS_Culture
                 if (removeTrait != null)
                     traits.Remove(removeTrait);
 
-                trait.Apply(tile.culture);
+                trait.Apply(this);
                 traits.Add(trait);
                 return true;
             }
@@ -230,7 +233,7 @@ public class WS_Culture
             if (selector <= 1.0f - chance)
             {
                 WS_CultureTrait removeTrait = trait;
-                trait.Reverse(tile.culture);
+                trait.Reverse(this);
                 traits.Remove(removeTrait);
                 return true;
             }

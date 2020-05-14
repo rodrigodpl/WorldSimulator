@@ -32,23 +32,6 @@ public class WS_TileUtility
     {
         return new Vector2(((position.x - (WS_World.sizeX / 2)) / WS_World.sizeX) * 180.0f, ((position.x - (WS_World.sizeY / 2)) / WS_World.sizeY) * 180.0f);
     }
-
-    public int DistanceTo(WS_TileUtility tile)   // distances between this tile and (tile) in array positions
-    {
-        int distanceX = int.MaxValue;
-        if (Mathf.Abs(position.x - tile.position.x) < distanceX)                    distanceX = Mathf.Abs(position.x - tile.position.x);
-        if (Mathf.Abs((position.x + WS_World.sizeX) - tile.position.x) < distanceX)    distanceX = Mathf.Abs((position.x + WS_World.sizeX) - tile.position.x);
-        if (Mathf.Abs(position.x - (tile.position.x + WS_World.sizeX)) < distanceX)    distanceX = Mathf.Abs(position.x - (tile.position.x + WS_World.sizeX));
-
-
-        int distanceY = int.MaxValue;
-        if (Mathf.Abs(position.y - tile.position.y) < distanceY)                    distanceY = Mathf.Abs(position.y - tile.position.y);
-        if (Mathf.Abs((position.y + WS_World.sizeY) - tile.position.x) < distanceY)    distanceY = Mathf.Abs((position.y + WS_World.sizeY) - tile.position.x);
-        if (Mathf.Abs(position.y - (tile.position.y + WS_World.sizeY)) < distanceY)    distanceY = Mathf.Abs(position.y - (tile.position.y + WS_World.sizeY));
-
-        return distanceX + distanceY;
-    }
-
  
 
     public void LoadNeighbors1()     // load neighbors in radius 1

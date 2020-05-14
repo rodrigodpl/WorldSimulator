@@ -2,184 +2,167 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FoodGenerationEvent : WS_BaseEvent
+public class PopulationGrowthEvent : WS_BaseEvent
 {
-    public FoodGenerationEvent() { eventName = "Food Generation"; module = EventModule.POPULATION; }
+    public PopulationGrowthEvent() { eventName = "Pop Growth"; module = EventModule.POPULATION; }
 
     protected override void Success()
     {
-        float survivalismBonus = Mathf.Max(tile.mainCulture.survivalism - tile.habitability, 0.0f);
+        // Habitability
 
-        float producedFood = tile.Population() * (1.0f - tile.urbanPercentile);
-        producedFood *= 1.0f + ((tile.habitability + survivalismBonus - 50.0f) / 200.0f);
-        producedFood *= tile.mainCulture.FoodEfficiency;
-        
-        tile.storedFood = (producedFood * 0.75f) - tile.Population();
-        tile.nation.storedFood += (producedFood * 0.25f);
-    }
-}
+        float habitability = tile.habitability;
 
-public class FoodConsumptionEvent : WS_BaseEvent
-{
-    public FoodConsumptionEvent() { eventName = "Food Consumption"; module = EventModule.POPULATION; }
+        if (tile.habitability - 100.0f < 0.0f)
+            habitability += Mathf.Min(tile.culture.survivalism, 100.0f - tile.habitability);
 
-    protected override void Success()
-    {
-        float growthFactor = 0.0f;
+        float habitabilityBonus = 1.0f;
 
-        tile.storedFood += tile.nation.storedFood * (tile.Population() / tile.nation.population);
+        // Spring
 
-        growthFactor += (((tile.Population() + tile.storedFood) / tile.Population()) - 1.0f);
-        growthFactor *= (tile.mainCulture.growthBonus / tile.mainCulture.mortalityRate);
-        growthFactor = (growthFactor * 0.000003f) + 1.0f;
+        float springValue = Random.Range(0.5f, 1.5f) * habitability;
 
-        float newPop = ((tile.Population() * growthFactor) - tile.Population()) * WS_World.frameMult;
+        if (springValue < 60.0f)        habitabilityBonus -= 0.1f;
+        else if (springValue < 80.0f)   habitabilityBonus += 0.0f;
+        else if (springValue < 120.0f)  habitabilityBonus += 0.1f;
+        else                            habitabilityBonus += 0.2f;
 
-        if (growthFactor < 1.0f)
-        {
-            tile.addPopulation(tile.mainCulture, 0.0f, newPop);
-        }
-        else
-        {
-            tile.urbanPercentile +=  tile.mainCulture.urbanization * newPop * Mathf.Min(tile.urbanPercentile, 0.1f) * WS_World.frameMult / 100000000.0f;
-            
-            if (tile.isFrontier)
-                tile.settlerPercentile += newPop * WS_World.frameMult / tile.Population();
+        // Winter
 
-            tile.addPopulation(tile.mainCulture, newPop * (1.0f - tile.urbanPercentile), newPop * tile.urbanPercentile);
-        }
+        float winterValue = Random.Range(0.5f, 1.5f) * habitability;
 
-        if (tile.urbanPercentile < 0.0f) tile.urbanPercentile = 0.0f;
-        else if (tile.urbanPercentile > 1.0f) tile.urbanPercentile = 1.0f;
+        if (winterValue < 60.0f)        habitabilityBonus -= 0.2f;
+        else if (winterValue < 80.0f)   habitabilityBonus -= 0.1f;
+        else if (winterValue < 120.0f)  habitabilityBonus -= 0.0f;
+        else                            habitabilityBonus += 0.1f;
 
-    }
-}
+        // Healthcare
 
-public class MigrationEvent : WS_BaseEvent
-{
-    public MigrationEvent() { eventName = "Migration"; module = EventModule.POPULATION; }
+        float healthcareBonus = 1.0f;
 
-    protected override void Success()
-    {
-        if (tile.Population() > tile.nation.population * 0.01f)
-        {
+        if ((tile.sanitation / (tile.population / 1000.0f)) < 1.2f)
+            healthcareBonus = (tile.sanitation / (tile.population / 1000.0f));
 
-            if (tile.settlement == Settlement.VILLAGE)
-            {
-                WS_Tile highestUrban = tile;
+        healthcareBonus += tile.culture.healthcare * 0.01f;
 
-                foreach (WS_Tile neigbhor in tile.Neighbors())
-                    if (neigbhor.urbanPercentile * neigbhor.Population() > highestUrban.urbanPercentile * highestUrban.Population())
-                        highestUrban = neigbhor;
+        // Neighbors
 
-                if (highestUrban != tile)
-                {
-                    float migrants = highestUrban.Population() * WS_World.frameMult * 0.0000005f;
+        float neighborBonus = 0.0f;
 
-                    if (tile.Population() * 0.002f < migrants) migrants = tile.Population() * 0.002f;
-
-                    highestUrban.addPopulation(tile.mainCulture, 0.0f, migrants);
-                    tile.addPopulation(tile.mainCulture, 0.0f, -migrants);
-                }
-            }
-            else
-            {
-                WS_Tile lowestRural = tile;
-
-                foreach (WS_Tile neigbhor in tile.Neighbors())
-                    if ((1.0f - neigbhor.urbanPercentile) * neigbhor.Population() < (1.0f - lowestRural.urbanPercentile) * lowestRural.Population() && neigbhor.Population() > 0.0f)
-                        lowestRural = neigbhor;
-
-                if (lowestRural != tile)
-                {
-                    float migrants = lowestRural.Population() * WS_World.frameMult * 0.0000005f;
-
-                    if (tile.Population() * 0.002f < migrants) migrants = tile.Population() * 0.002f;
-
-                    lowestRural.addPopulation(tile.mainCulture, migrants, 0.0f);
-                    tile.addPopulation(tile.mainCulture, -migrants, 0.0f);
-                }
-            }
-        }
-        
-    }
-}
-        
-
-public class ColonizationnEvent : WS_BaseEvent
-{
-    private WS_Tile destination = null;
-
-    public ColonizationnEvent() { eventName = "Colonization"; module = EventModule.POPULATION; }
-
-    protected override bool FireCheck()
-    {
-        return (tile.settlerPercentile > tile.mainCulture.settlerCap / tile.mainCulture.expansionBonus &&
-                tile.settlerPercentile > tile.mainCulture.nationSettlerCap);
-    }
-
-    protected override bool SuccessCheck()
-    {
         foreach (WS_Tile neighbor in tile.Neighbors())
-            if (neighbor.Population() == 0.0f && !neighbor.seaBody)
-            {
-                if (destination == null ? true : neighbor.habitability > destination.habitability)
-                    destination = neighbor;
-            }
+            neighborBonus += neighbor.storedFood;
 
-        if (destination == null)
-            return false;
+        neighborBonus /= 6;
 
-        return Random.Range(0.0f, 1.0f) > ((destination.habitability + tile.mainCulture.survivalism) / 300.0f);
-    }
+        //Prosperity
 
-    protected override void Success()
-    {
-        float settlers = tile.settlerPercentile / 100.0f * tile.Population();
+        //float prosperityBonus = 1.0f;
+        // ============================= ADADADADADADADADADADADADADA!!!!!!
 
-        destination.addPopulation(tile.mainCulture, settlers * (1.0f - tile.urbanPercentile), settlers * tile.urbanPercentile, false);
+        // Growth
 
-        destination.nation = tile.nation;
-        destination.mainCulture = tile.mainCulture;
-        tile.nation.nationTiles.Add(destination);
+        tile.foodUnits = tile.farmers * tile.culture.FoodEfficiency * habitabilityBonus * healthcareBonus;
+        tile.foodUnits += neighborBonus;
+        tile.foodUnits *= 1000.0f;
 
-        tile.settlerPercentile = 0.0f;
-        tile.addPopulation(tile.mainCulture, -settlers * (1.0f - tile.urbanPercentile), -settlers * tile.urbanPercentile, false);
-        destination = null;
-    }
+        tile.storedFood = (tile.foodUnits - tile.population) * (tile.storage * 0.01f) * 0.001f;
 
-    protected override void Fail()
-    {
-        float settlers = tile.settlerPercentile / 100.0f * tile.Population();
-        tile.settlerPercentile = 0.0f;
-        tile.addPopulation(tile.mainCulture, -settlers * (1.0f - tile.urbanPercentile), -settlers * tile.urbanPercentile, false);
-        destination = null;
+        float popGrowth = (tile.foodUnits - tile.population) * 0.01f;
+
+
+        // avoid future divisions by zero
+        if (popGrowth != 0.0f)
+            tile.lastPopGrowth = popGrowth;
+        else
+            tile.lastPopGrowth = 0.01f;
+
+
+        if (popGrowth < WS_World.minGrowth)         WS_World.minGrowth = popGrowth;
+        else if (popGrowth > WS_World.maxGrowth)    WS_World.maxGrowth = popGrowth;
+
+
+        int lastPop = Mathf.CeilToInt(tile.population / 1000.0f);
+
+        tile.population += popGrowth;
+
+        // New Citizen 
+        
+        for(int i = 0; i < Mathf.CeilToInt(tile.population / 1000.0f) - lastPop; i++)
+            tile.farmers++;
+
+        // ========================================= 
+
+
+        // Lost Citizen
+
+
+        for (int i = 0; i < lastPop - Mathf.CeilToInt(tile.population / 1000.0f); i++)
+            tile.farmers--;
+
+        if (tile.population <= 0.0f)
+        {
+            tile.population = 0.0f;
+            tile.disaster = null;
+            tile.culture = null;
+            tile.nation = null;
+            tile.storedFood = 0.0f;
+        }
+
     }
 }
 
 
-
-public class RuralMigrationsEvent : WS_BaseEvent
+public class ColonizationEvent : WS_BaseEvent
 {
+    public ColonizationEvent() { eventName = "Colonization"; module = EventModule.POPULATION; }
 
-    public RuralMigrationsEvent() { eventName = "Rural Migrations"; module = EventModule.POPULATION; }
+    List<WS_Tile> possibleColonization = new List<WS_Tile>();
+    WS_Tile dest = null;
 
     protected override bool FireCheck()
     {
-        return  (tile.nation.storedFood / 0.25f < tile.nation.population && tile.urbanPercentile > 0.3f);
+        possibleColonization.Clear();
+        dest = null;
+
+        bool fire = false;
+
+        foreach (WS_Tile neighbor in tile.Neighbors())
+        {
+            if (neighbor.population <= 0.0f)
+            {
+                if (tile.culture.survivalism + tile.culture.expansionism + neighbor.habitability > 80.0f)
+                {
+                    possibleColonization.Add(neighbor);
+                    fire = true;
+                }
+            }
+        }
+
+
+        return fire;
     }
 
     protected override bool SuccessCheck()
     {
-        return Random.Range(0.0f, 100.0f) < (Mathf.Sqrt(WS_World.frameMult));
+        foreach(WS_Tile neighbor in possibleColonization)
+        {
+            if(Random.Range(0.0f, 1.0f) < tile.lastPopGrowth / tile.population)
+            {
+                dest = neighbor;
+                return true;
+            }
+        }
+
+        return false;
     }
+
 
     protected override void Success()
     {
-        float intensity = Random.Range(0.1f, 0.25f);
-        tile.urbanPercentile -= intensity;
+        tile.population -= tile.lastPopGrowth;
+        dest.population += tile.lastPopGrowth;
+
+        dest.farmers++;
+        dest.culture = tile.culture;
     }
 
 }
-
-
