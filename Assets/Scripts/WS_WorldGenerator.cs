@@ -84,6 +84,7 @@ public class WS_WorldGenerator
 
     public int minCultureNum = 20;
     public float advCulturePercentage = 0.35f;
+    public float advReligionPercentage = 0.2f;
     public float minHabitability = 70.0f;
 
 
@@ -91,6 +92,7 @@ public class WS_WorldGenerator
     public void PopulateWorld()
     {
         List<WS_Culture> cultures = new List<WS_Culture>();
+        List<WS_Religion> religions = new List<WS_Religion>();
 
         while (cultures.Count < minCultureNum)
         {
@@ -106,14 +108,23 @@ public class WS_WorldGenerator
                         tile.farmers = (int)Mathf.CeilToInt(tile.population / 1000.0f);
                     }
 
-                    if (tile.population > 1000.0f && tile.culture == null)
+                    if (tile.population > 1000.0f)
                     {
                         if (Random.Range(0.0f, 1.0f) < tile.population / 500000)
                         {
                             tile.culture = new WS_Culture(tile);
                             cultures.Add(tile.culture);
                         }
+
+                        if (Random.Range(0.0f, 1.0f) < tile.population / 1000000)
+                        {
+                            tile.religion = new WS_Religion(tile);
+                            religions.Add(tile.religion);
+                        }
                     }
+
+
+
                 }
         }
 
@@ -135,14 +146,41 @@ public class WS_WorldGenerator
                 cultures.Add(newCulture);
                 cultures.Remove(oldCulture);
 
-                WS_Nation newNation = new WS_Nation();
-                newNation.nationColor = newCulture.cultureColor;
-                capital.nation = newNation;
-                newNation.capital = capital;
-                capital.nation.nationTiles.Add(capital);
-                capital.nation.rulingCulture = capital.culture;
+                //WS_Nation newNation = new WS_Nation();
+                //newNation.nationColor = newCulture.color;
+                //capital.nation = newNation;
+                //newNation.capital = capital;
+                //capital.nation.rulingCulture = capital.culture;
 
                 advCultures--;
+            }
+        }
+
+
+        int advReligions = Mathf.FloorToInt(advReligionPercentage * cultures.Count);
+
+        for (int i = 0; i < advReligions; i++)
+        {
+            int index = Mathf.FloorToInt(Random.Range(0.0f, religions.Count - 0.01f));
+
+            if (religions[index].tribal)
+            {
+                WS_Religion oldReligion = religions[index];
+                WS_Tile capital = oldReligion.capital;
+
+                WS_Religion newReligion = new WS_Religion(oldReligion, oldReligion.capital);
+
+                oldReligion.capital.religion = newReligion;
+                religions.Add(newReligion);
+                religions.Remove(oldReligion);
+
+                //WS_Nation newNation = new WS_Nation();
+                //newNation.nationColor = newCulture.color;
+                //capital.nation = newNation;
+                //newNation.capital = capital;
+                //capital.nation.rulingCulture = capital.culture;
+
+                advReligions--;
             }
         }
 
@@ -152,23 +190,45 @@ public class WS_WorldGenerator
             {
                 WS_Tile tile = world.GetTile(new Vector2Int(i, j));
 
-                if (tile.population > 0.0f && tile.culture == null)
+                if (tile.population > 0.0f)
                 {
-                    WS_Culture nearestCulture = null;
-                    int minDist = int.MaxValue;
-
-                    foreach (WS_Culture culture in cultures)
+                    if (tile.culture == null)
                     {
-                        int distance = tile.DistanceTo(culture.capital) + Mathf.FloorToInt(Random.Range(-1.4f, 1.4f));
+                        WS_Culture nearestCulture = null;
+                        int minDist = int.MaxValue;
 
-                        if (distance < minDist)
+                        foreach (WS_Culture culture in cultures)
                         {
-                            minDist = distance;
-                            nearestCulture = culture;
+                            int distance = tile.DistanceTo(culture.capital) + Mathf.FloorToInt(Random.Range(-1.4f, 1.4f));
+
+                            if (distance < minDist)
+                            {
+                                minDist = distance;
+                                nearestCulture = culture;
+                            }
                         }
+
+                        tile.culture = nearestCulture;
                     }
 
-                    tile.culture = nearestCulture;
+                    if(tile.religion == null)
+                    {
+                        WS_Religion nearestReligion = null;
+                        int minDist = int.MaxValue;
+
+                        foreach (WS_Religion religion in religions)
+                        {
+                            int distance = tile.DistanceTo(religion.capital) + Mathf.FloorToInt(Random.Range(-1.4f, 1.4f));
+
+                            if (distance < minDist)
+                            {
+                                minDist = distance;
+                                nearestReligion = religion;
+                            }
+                        }
+
+                        tile.religion = nearestReligion;
+                    }
                 }
             }
 

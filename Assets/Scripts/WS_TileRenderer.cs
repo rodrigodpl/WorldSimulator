@@ -11,6 +11,8 @@ public class WS_TileRenderer
     private Color32 lastRenderColor = new Color32();
     private Vector2Int renderPos = new Vector2Int();
 
+    public float blinkIntensity = 0.0f;
+    public bool blinkReverse = false;
 
     public void setRenderPos(Vector2Int _renderPos)
     {
@@ -141,7 +143,7 @@ public class WS_TileRenderer
                     case CulFilter.CULTURE:  // set color based on habitability, red to black if negative, black to green if positive
 
                         if (tile.culture != null)
-                            renderColor = tile.culture.cultureColor;
+                            renderColor = tile.culture.color;
                         else
                             renderColor = Color.white;
 
@@ -168,38 +170,58 @@ public class WS_TileRenderer
                     renderColor = Color.white;
 
                 break;
+
+
+            case WorldRenderMode.RELIGION:
+
+                switch (WS_FilterPanel.relFilter)
+                {
+                    case RelFilter.RELIGION:  // set color based on habitability, red to black if negative, black to green if positive
+
+                        if (tile.religion != null)
+                            renderColor = tile.religion.color;
+                        else
+                            renderColor = Color.white;
+
+                        break;
+                }
+
+                break;
         }
 
 
         if (WS_TilePanel.selectedTile == tile)
         {
-            lastRenderColor = renderColor;
-
-            for (int x = 0; x < world.hexTex.width; x++)
-                for (int y = 0; y < world.hexTex.height; y++)
-                {
-                    if (world.pixels[(y * world.hexTex.height) + x].a > 0)
-                    {
-                        if (world.pixels[(y * world.hexTex.height) + x].a > 240)
-                            world.output.SetPixel(renderPos.x + x, renderPos.y + y, renderColor);
-                        else
-                            world.output.SetPixel(renderPos.x + x, renderPos.y + y, Color.black);
-                    }
-                }
-
+            if (!blinkReverse)
+            {
+                blinkIntensity += 0.02f;
+                if (blinkIntensity > 0.5f)
+                    blinkReverse = !blinkReverse;
+            }
+            else
+            {
+                blinkIntensity -= 0.02f;
+                if (blinkIntensity < -0.5f)
+                    blinkReverse = !blinkReverse;
+            }
         }
-        else if (!lastRenderColor.Equals(renderColor))
+
+
+        if (!lastRenderColor.Equals(renderColor) || blinkIntensity != 0.0f)
         {
             lastRenderColor = renderColor;
 
+            if (blinkIntensity != 0.0f && WS_TilePanel.selectedTile != tile)
+                blinkIntensity = 0.0f;
+
             for (int x = 0; x < world.hexTex.width; x++)
                 for (int y = 0; y < world.hexTex.height; y++)
                 {
-
                     if (world.pixels[(y * world.hexTex.height) + x].a > 0)
-                        world.output.SetPixel(renderPos.x + x, renderPos.y + y, renderColor);
+                        world.output.SetPixel(renderPos.x + x, renderPos.y + y, renderColor + new Color(blinkIntensity, blinkIntensity, blinkIntensity));
                 }
         }
+
     }
 }
 

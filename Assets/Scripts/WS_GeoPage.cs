@@ -47,21 +47,21 @@ public class WS_GeoPage : MonoBehaviour
 
     public void changeAltitude()
     {
-        WS_TilePanel.selectedTile.altitude = int.Parse(altitudeField.text);
+        WS_TilePanel.selectedTile.altitude = float.Parse(altitudeField.text);
     }
 
     public void changeTemperature()
     {
-        WS_TilePanel.selectedTile.avgTemperature = int.Parse(temperatureField.text);
+        WS_TilePanel.selectedTile.avgTemperature = float.Parse(temperatureField.text);
     }
 
     public void changeHumidity()
     {
-        WS_TilePanel.selectedTile.humidity = int.Parse(humidityField.text);
+        WS_TilePanel.selectedTile.humidity = float.Parse(humidityField.text);
     }
 
     public void changeHabitability()
     {
-        WS_TilePanel.selectedTile.habitability = int.Parse(habitabilityField.text);
+        WS_TilePanel.selectedTile.habitability = float.Parse(habitabilityField.text);
     }
 }

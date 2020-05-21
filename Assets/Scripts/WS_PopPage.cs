@@ -41,12 +41,12 @@ public class WS_PopPage : MonoBehaviour
 
     public void changePopulation()
     {
-        WS_TilePanel.selectedTile.population = int.Parse(populationField.text);
+        WS_TilePanel.selectedTile.population = float.Parse(populationField.text);
     }
 
     public void changeSanitation()
     {
-        WS_TilePanel.selectedTile.sanitation = int.Parse(sanitationField.text);
+        WS_TilePanel.selectedTile.sanitation = float.Parse(sanitationField.text);
     }
 
 }

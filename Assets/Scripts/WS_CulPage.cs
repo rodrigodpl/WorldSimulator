@@ -65,31 +65,31 @@ public class WS_CulPage : MonoBehaviour
 
     public void changeSurvivalism()
     {
-        WS_TilePanel.selectedTile.culture.survivalism = int.Parse(survivalismField.text);
+        WS_TilePanel.selectedTile.culture.survivalism = float.Parse(survivalismField.text);
     }
 
     public void changeExpansionism()
     {
-        WS_TilePanel.selectedTile.culture.expansionism = int.Parse(expansionismField.text);
+        WS_TilePanel.selectedTile.culture.expansionism = float.Parse(expansionismField.text);
     }
 
     public void changeHealthcare()
     {
-        WS_TilePanel.selectedTile.culture.healthcare = int.Parse(healthcareField.text);
+        WS_TilePanel.selectedTile.culture.healthcare = float.Parse(healthcareField.text);
     }
 
     public void changeInfluence()
     {
-        WS_TilePanel.selectedTile.culture.influenceBonus = int.Parse(influenceField.text);
+        WS_TilePanel.selectedTile.culture.influenceBonus = float.Parse(influenceField.text);
     }
 
     public void changeSyncretism()
     {
-        WS_TilePanel.selectedTile.culture.syncretism = int.Parse(syncretismField.text);
+        WS_TilePanel.selectedTile.culture.syncretism = float.Parse(syncretismField.text);
     }
 
     public void changeDecadence()
     {
-        WS_TilePanel.selectedTile.culture.decadence = int.Parse(decadenceField.text);
+        WS_TilePanel.selectedTile.culture.decadence = float.Parse(decadenceField.text);
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum EventModule { NONE, POPULATION, CULTURE, DISASTER}
+public enum EventModule { NONE, POPULATION, CULTURE, DISASTER, RELIGION}
 
 public class WS_BaseEvent 
 {

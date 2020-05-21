@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-using CultureTraits;
 
 //tribal
 public class CultureBirthEvent : WS_BaseEvent
@@ -110,8 +109,8 @@ public class CulturalMergeEvent : WS_BaseEvent
         {
             float affinity = 0.0f;
 
-            foreach(WS_CultureTrait trait in tile.culture.traits)
-                foreach(WS_CultureTrait neighborTrait in neighboringCulture.culture.traits)
+            foreach(WS_Trait trait in tile.culture.traits)
+                foreach(WS_Trait neighborTrait in neighboringCulture.culture.traits)
                 {
                     if (trait == neighborTrait)
                         affinity += 1.0f;
@@ -119,7 +118,7 @@ public class CulturalMergeEvent : WS_BaseEvent
 
             affinity += tile.culture.syncretism + neighboringCulture.culture.syncretism;
 
-            if (Random.Range(0.0f, 1.0f) < affinity * 0.02f)
+            if (Random.Range(0.0f, 1.0f) < affinity * 0.001f)
             {
                 mergedCulture = neighboringCulture;
                 return true;
@@ -131,7 +130,14 @@ public class CulturalMergeEvent : WS_BaseEvent
 
     protected override void Success()
     {
+        mergedCulture.culture.merged = true;
         tile.culture = new WS_Culture(tile.culture, mergedCulture.culture, tile);
+
+        foreach (WS_Tile neighbor in tile.Neighbors())
+            if(neighbor.culture != null)
+                if (neighbor.culture.capital != neighbor)
+                    neighbor.culture = tile.culture;
+
     }
 }
 
@@ -162,20 +168,30 @@ public class CulturalCollapseEvent : WS_BaseEvent
 
     protected override bool FireCheck()
     {
-        return !tile.culture.tribal && tile.nation != null;
+        return !tile.culture.tribal;
     }
 
     protected override bool SuccessCheck()
     {
-        if (tile.nation.nationTiles.Count > 30)
-            tile.culture.decadence += (tile.nation.nationTiles.Count - 30) * 0.01f;
+        tile.culture.decadence += 0.0001f;
 
-        return Random.Range(0.0f, 1.0f) < tile.culture.decadence * 0.01f;
+        if (tile.culture.capital == tile)
+        {
+            tile.culture.decadence -= 0.005f;
+
+            if (tile.culture.decadence < 0.0f)
+                tile.culture.decadence = 0.0f;
+
+            return Random.Range(0.0f, 1.0f) < tile.culture.decadence * 0.0001f;
+        }
+        else
+            return false;
     }
 
     protected override void Success()
     {
         tile.culture.syncretism += 20.0f;
         tile.culture.influenceBonus -= 7.0f;
+        tile.culture.decadence = 0.0f;
     }
 }

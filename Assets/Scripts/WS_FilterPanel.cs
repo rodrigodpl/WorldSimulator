@@ -4,30 +4,34 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public enum WorldRenderMode { GEOGRAPHY, POPULATION, CULTURE, RESOURCE, DISASTER }
+public enum WorldRenderMode { GEOGRAPHY, POPULATION, CULTURE, RESOURCE, DISASTER, RELIGION }
 
 public enum GeoFilter { ALTITUDE, TEMPERATURE, HUMIDITY, EROSION_STRENGTH, RIVER_STRENGTH, BIOME, HABITABILITY }
 public enum PopFilter { NATION, POPULATION, GROWTH }
-public enum CulFilter { CULTURE, MAX }
-public enum ResFilter { RESOURCE, MAX }
+public enum CulFilter { CULTURE }
+public enum ResFilter { RESOURCE }
+public enum RelFilter { RELIGION }
 
 public class WS_FilterPanel : MonoBehaviour
 {
     public static GeoFilter geoFilter = GeoFilter.BIOME;
     public static PopFilter popFilter = PopFilter.NATION;
     public static CulFilter culFilter = CulFilter.CULTURE;
+    public static ResFilter resFilter = ResFilter.RESOURCE;
+    public static RelFilter relFilter = RelFilter.RELIGION;
 
     public static WorldRenderMode rendermode = WorldRenderMode.GEOGRAPHY;
 
-    public GameObject ModuleDropdown = null;
+    private GameObject ModuleDropdown = null;
 
-    public GameObject GeographicDropdown = null;
-    public GameObject PopulationDropdown = null;
-    public GameObject CultureDropdown = null;
-    public GameObject ResourceDropdown = null;
-    public GameObject DisasterDropdown = null;
+    private GameObject GeographicDropdown = null;
+    private GameObject PopulationDropdown = null;
+    private GameObject CultureDropdown = null;
+    private GameObject ResourceDropdown = null;
+    private GameObject DisasterDropdown = null;
+    private GameObject ReligionDropdown = null;
 
-    public GameObject lastDropdown = null;
+    private  GameObject lastDropdown = null;
 
     private void Start()
     {
@@ -38,6 +42,7 @@ public class WS_FilterPanel : MonoBehaviour
         CultureDropdown     = GameObject.Find("CultureDropdown");
         ResourceDropdown    = GameObject.Find("ResourceDropdown");
         DisasterDropdown    = GameObject.Find("DisasterDropdown");
+        ReligionDropdown    = GameObject.Find("ReligionDropdown");
 
 
         ModuleDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
@@ -60,6 +65,7 @@ public class WS_FilterPanel : MonoBehaviour
         CultureDropdown.SetActive(false);
         ResourceDropdown.SetActive(false);
         DisasterDropdown.SetActive(false);
+        ReligionDropdown.SetActive(false);
     }
 
     public void onRenderModeChange(Dropdown dropdown)
@@ -75,6 +81,7 @@ public class WS_FilterPanel : MonoBehaviour
             case WorldRenderMode.CULTURE:       CultureDropdown.SetActive(true); lastDropdown = CultureDropdown; break;
             case WorldRenderMode.RESOURCE:      ResourceDropdown.SetActive(true); lastDropdown = ResourceDropdown; break;
             case WorldRenderMode.DISASTER:      DisasterDropdown.SetActive(true); lastDropdown = DisasterDropdown; break;
+            case WorldRenderMode.RELIGION:      ReligionDropdown.SetActive(true); lastDropdown = ReligionDropdown; break;
         }
     }
 

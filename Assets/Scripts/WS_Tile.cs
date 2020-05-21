@@ -29,8 +29,8 @@ public class WS_Tile
     public float population     = 0.0f;
     public int farmers          = 0;
     public float foodUnits      = 0.0f;
-    public int sanitation       = 30;
-    public int storage          = 10;
+    public float sanitation       = 30;
+    public float storage          = 10;
     public float lastPopGrowth  = 0.0f;
     public float storedFood     = 0.0f;
 
@@ -42,6 +42,8 @@ public class WS_Tile
     // Disaster Data
     public WS_BaseDisaster disaster = null;
     public int disasterDuration = 0;
+
+    public WS_Religion religion = null;
    
 
     public List<WS_Tile> Neighbors(int radius = 1)     // Returns, or loads if unloaded, the tile's neigbors in (radius)

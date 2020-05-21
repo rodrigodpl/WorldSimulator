@@ -77,7 +77,7 @@ public class PopulationGrowthEvent : WS_BaseEvent
 
 
         if (popGrowth < WS_World.minGrowth)         WS_World.minGrowth = popGrowth;
-        else if (popGrowth > WS_World.maxGrowth)    WS_World.maxGrowth = popGrowth;
+        if (popGrowth > WS_World.maxGrowth)         WS_World.maxGrowth = popGrowth;
 
 
         int lastPop = Mathf.CeilToInt(tile.population / 1000.0f);
@@ -145,7 +145,7 @@ public class ColonizationEvent : WS_BaseEvent
     {
         foreach(WS_Tile neighbor in possibleColonization)
         {
-            if(Random.Range(0.0f, 1.0f) < tile.lastPopGrowth / tile.population)
+            if(Random.Range(0.0f, 1.0f) < tile.lastPopGrowth * 0.000001f)
             {
                 dest = neighbor;
                 return true;
@@ -163,6 +163,7 @@ public class ColonizationEvent : WS_BaseEvent
 
         dest.farmers++;
         dest.culture = tile.culture;
+        dest.religion = tile.religion;
     }
 
 }

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics;
 
-using CultureTraits;
 
 public class WS_World : MonoBehaviour
 {
     // World Variables
     private WS_Tile[][] tiles               = null;     // tiles container
     private List<WS_BaseEvent> eventPool    = new List<WS_BaseEvent>();
-    public static List<WS_CultureTrait> cultureTraits     = new List<WS_CultureTrait>();
+    public static List<WS_Trait> cultureTraits = new List<WS_Trait>();
+    public static List<WS_Trait> religionTraits = new List<WS_Trait>();
     public static List<WS_BaseDisaster> disasters = new List<WS_BaseDisaster>();
     private WS_WorldGenerator worldGenerator   = null;     // world generator, which fills blank tiles with geographical data
 
@@ -48,30 +48,26 @@ public class WS_World : MonoBehaviour
     }
 
     void Start()
-    {
-        tiles           = new WS_Tile[sizeX][];                    // initialize world
-        worldGenerator  = new WS_WorldGenerator();
-        
-
+    {   
         // EVENTS (order is relevant!)
 
-        // Population
+        // Population Events
         eventPool.Add(new PopulationGrowthEvent());
         eventPool.Add(new ColonizationEvent());
 
-        // Culture
+
+        // Culture Events
         eventPool.Add(new CultureBirthEvent());
         eventPool.Add(new CulturalAdoptionEvent());
         eventPool.Add(new CulturalMergeEvent());
         eventPool.Add(new CulturalEvolutionEvent());
         eventPool.Add(new CulturalCollapseEvent());
 
+
         // Disaster Events
         eventPool.Add(new DisasterTriggerEvent());
         eventPool.Add(new DisasterEndEvent());
         eventPool.Add(new DisasterSpreadEvent());
-
-
 
         // Disasters
         disasters.Add(new DroughtDisaster());
@@ -80,7 +76,18 @@ public class WS_World : MonoBehaviour
         disasters.Add(new PlagueDisaster());
 
 
+        // Religion Events
+        eventPool.Add(new ReligiousBirthEvent());
+        eventPool.Add(new ReligiousAdoptionEvent());
+        eventPool.Add(new ReligiousMergeEvent());
+        eventPool.Add(new ReligiousEvolutionEvent());
+        eventPool.Add(new ReligiousReformEvent());
+
+
+
         // TRAITS (order is not relevant)
+
+        // Culture Traits
         cultureTraits.Add(new SurvivalistsTrait());
         cultureTraits.Add(new ResilientTrait());
         cultureTraits.Add(new UnadaptableTrait());
@@ -112,6 +119,84 @@ public class WS_World : MonoBehaviour
         cultureTraits.Add(new RepressiveTrait());
 
 
+        // Religion Traits
+        religionTraits.Add(new GoverningChurchTrait());
+        religionTraits.Add(new PowerfulPriestsTrait());
+        religionTraits.Add(new AgnosticsTrait());
+        religionTraits.Add(new AtheistsTrait());
+
+        religionTraits.Add(new MoneyHungryTrait());
+        religionTraits.Add(new ChurchDonationsTrait());
+        religionTraits.Add(new AltruistsTrait());
+        religionTraits.Add(new AsceticsTrait());
+
+        religionTraits.Add(new InfluentialTrait());
+        religionTraits.Add(new OutwardnessTrait());
+        religionTraits.Add(new InwardnessTrait());
+        religionTraits.Add(new IsolationistsTrait());
+
+        religionTraits.Add(new SyncreticTrait());
+        religionTraits.Add(new TolerantTrait());
+        religionTraits.Add(new IntolerantTrait());
+        religionTraits.Add(new RepressiveTrait());
+
+
+        InitWorld();
+    }
+
+    private void Update()
+    {
+        for (int tileXIt = 0; tileXIt < sizeX; tileXIt++)
+            for (int tileYIt = 0; tileYIt < sizeY; tileYIt++)
+                tiles[tileXIt][tileYIt].tileRenderer.Render();
+
+        output.Apply();
+    }
+
+    private void UpdateWorld()
+    {
+        timer.Start();
+
+        float time = 0.0f;
+        switch (speed)
+        {
+            case SimulationSpeed.SLOW: time = 2.0f; break;
+            case SimulationSpeed.NORMAL: time = 1.0f; break;
+            case SimulationSpeed.FAST: time = 0.5f; break;
+            case SimulationSpeed.FASTEST: time = 0.1f; break;
+        }
+
+        if (time == 0.0f)  // PAUSED
+        {
+            Invoke("UpdateWorld", 0.1f);
+            return;
+        }
+
+        maxGrowth = float.MinValue;
+        minGrowth = float.MaxValue;
+
+        foreach (WS_BaseEvent Event in eventPool)
+        {
+            for (int tileXIt = 0; tileXIt < sizeX; tileXIt++)
+            {
+                for (int tileYIt = 0; tileYIt < sizeY; tileYIt++)
+                {
+                    if (tiles[tileXIt][tileYIt].population > 0.0f)
+                        Event.Execute(tiles[tileXIt][tileYIt]);
+                }
+            }
+        }
+
+        year++;
+
+        Invoke("UpdateWorld", time);
+    }
+  
+    private void InitWorld()
+    {
+        tiles = new WS_Tile[sizeX][];                    // initialize world
+        worldGenerator = new WS_WorldGenerator();
+
 
         for (int i = 0; i < sizeX; i++)
         {
@@ -123,11 +208,11 @@ public class WS_World : MonoBehaviour
 
                 if (j % 2 == 1)                                                 // apply a position offset if odd row
                     position.x += 0.43f * hexTex.width;
-                
+
                 tiles[i][j] = new WS_Tile();
                 tiles[i][j].utility = new WS_TileUtility();
                 tiles[i][j].tileRenderer = new WS_TileRenderer();
-                
+
                 // set pointers to newly created tile
                 tiles[i][j].utility.setPosition(new Vector2Int(i, j));
                 tiles[i][j].utility.setWorld(this);
@@ -138,7 +223,7 @@ public class WS_World : MonoBehaviour
             }
         }
 
-        
+
         for (int r = 1; r <= 3; r++)
             for (int i = 0; i < sizeX; i++)
                 for (int j = 0; j < sizeY; j++)
@@ -171,54 +256,4 @@ public class WS_World : MonoBehaviour
 
         UpdateWorld();
     }
-
-    private void Update()
-    {
-        for (int tileXIt = 0; tileXIt < sizeX; tileXIt++)
-            for (int tileYIt = 0; tileYIt < sizeY; tileYIt++)
-                tiles[tileXIt][tileYIt].tileRenderer.Render();
-
-        output.Apply();
-    }
-
-    private void UpdateWorld()
-    {
-
-        float time = 0.0f;
-        switch (speed)
-        {
-            case SimulationSpeed.SLOW: time = 2.0f; break;
-            case SimulationSpeed.NORMAL: time = 1.0f; break;
-            case SimulationSpeed.FAST: time = 0.5f; break;
-            case SimulationSpeed.FASTEST: time = 0.1f; break;
-        }
-
-        if (time == 0.0f)  // PAUSED
-        {
-            Invoke("UpdateWorld", 0.1f);
-            return;
-        }
-
-        timer.Start();
-
-        foreach (WS_BaseEvent Event in eventPool)
-        {
-            for (int tileXIt = 0; tileXIt < sizeX; tileXIt++)
-            {
-                for (int tileYIt = 0; tileYIt < sizeY; tileYIt++)
-                {
-                    if (tiles[tileXIt][tileYIt].population > 0.0f)
-                        Event.Execute(tiles[tileXIt][tileYIt]);
-                }
-            }
-        }
-
-        maxGrowth = float.MinValue;
-        minGrowth = float.MaxValue;
-
-        year++;
-
-        Invoke("UpdateWorld", time);
-    }
-  
 }
