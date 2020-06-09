@@ -13,6 +13,7 @@ public class WS_Culture : WS_Entity
     public float survivalism = 0.0f;  
     public float expansionism = 0.0f;
     public float healthcare = 0.05f;
+    public float decadenceLoss = 5.0f;
 
     public WS_Culture(WS_Tile tile) { Init(tile, EntityType.CULTURE); }
 

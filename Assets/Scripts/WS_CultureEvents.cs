@@ -173,16 +173,16 @@ public class CulturalCollapseEvent : WS_BaseEvent
 
     protected override bool SuccessCheck()
     {
-        tile.culture.decadence += 0.0001f;
+        tile.culture.decadence += tile.decadenceGain * (tile.population / 1000.0f);
 
         if (tile.culture.capital == tile)
         {
-            tile.culture.decadence -= 0.005f;
+            tile.culture.decadence -= tile.culture.decadenceLoss;
 
             if (tile.culture.decadence < 0.0f)
                 tile.culture.decadence = 0.0f;
 
-            return Random.Range(0.0f, 1.0f) < tile.culture.decadence * 0.0001f;
+            return Random.Range(0.0f, 1.0f) < (tile.culture.decadence / 1000.0f) * 0.001f;
         }
         else
             return false;

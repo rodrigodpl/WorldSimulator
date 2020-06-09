@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DisasterTriggerEvent : WS_BaseEvent
 {
-    WS_BaseDisaster triggeredDisaster = null;
+    WS_Disaster triggeredDisaster = null;
 
     public DisasterTriggerEvent() { eventName = "Disaster Trigger"; module = EventModule.DISASTER; }
 
@@ -19,7 +19,7 @@ public class DisasterTriggerEvent : WS_BaseEvent
 
         float higherChance = 0.0f;
 
-        foreach(WS_BaseDisaster disaster in WS_World.disasters)
+        foreach(WS_Disaster disaster in WS_World.disasters)
             if(disaster.Chance(tile) > higherChance)
             {
                 higherChance = disaster.Chance(tile);
@@ -90,7 +90,7 @@ public class DisasterEndEvent : WS_BaseEvent
 
 public class DisasterSpreadEvent : WS_BaseEvent
 {
-    WS_BaseDisaster spreadDisaster = null;
+    WS_Disaster spreadDisaster = null;
 
     public DisasterSpreadEvent() { eventName = "Disaster Spread"; module = EventModule.DISASTER; }
 

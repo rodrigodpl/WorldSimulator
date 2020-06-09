@@ -7,12 +7,13 @@ using System.Diagnostics;
 public class WS_World : MonoBehaviour
 {
     // World Variables
-    private WS_Tile[][] tiles               = null;     // tiles container
-    private List<WS_BaseEvent> eventPool    = new List<WS_BaseEvent>();
-    public static List<WS_Trait> cultureTraits = new List<WS_Trait>();
-    public static List<WS_Trait> religionTraits = new List<WS_Trait>();
-    public static List<WS_BaseDisaster> disasters = new List<WS_BaseDisaster>();
-    private WS_WorldGenerator worldGenerator   = null;     // world generator, which fills blank tiles with geographical data
+    private WS_Tile[][] tiles                               = null;     // tiles container
+    private List<WS_BaseEvent> eventPool                    = new List<WS_BaseEvent>();
+    public static List<WS_Trait> cultureTraits              = new List<WS_Trait>();
+    public static List<WS_Trait> religionTraits             = new List<WS_Trait>();
+    public static List<WS_Disaster> disasters               = new List<WS_Disaster>();
+    public static List<WS_Infrastructure> infrastructure    = new List<WS_Infrastructure>();
+    private WS_WorldGenerator worldGenerator                = null;     // world generator, which fills blank tiles with geographical data
 
     public static int sizeX                 = 200;      // number of columns in the map
     public static int sizeY                 = 100;      // number of rows in the map
@@ -69,11 +70,11 @@ public class WS_World : MonoBehaviour
         eventPool.Add(new DisasterEndEvent());
         eventPool.Add(new DisasterSpreadEvent());
 
-        // Disasters
-        disasters.Add(new DroughtDisaster());
-        disasters.Add(new FloodDisaster());
-        disasters.Add(new TsunamiDisaster());
-        disasters.Add(new PlagueDisaster());
+            // Disasters
+            disasters.Add(new WS_DroughtDisaster());
+            disasters.Add(new WS_FloodDisaster());
+            disasters.Add(new WS_TsunamiDisaster());
+            disasters.Add(new WS_PlagueDisaster());
 
 
         // Religion Events
@@ -83,7 +84,17 @@ public class WS_World : MonoBehaviour
         eventPool.Add(new ReligiousEvolutionEvent());
         eventPool.Add(new ReligiousReformEvent());
 
+        // Infrastructure Events
+        eventPool.Add(new InfrastructureProductionEvent());
 
+        // Infrastructures
+            infrastructure.Add(new WS_SanitationInfrastructure());
+            infrastructure.Add(new WS_FoodInfrastructure());
+            infrastructure.Add(new WS_HealthcareInfrastructure());
+            infrastructure.Add(new WS_DecadenceInfrastructure());
+            infrastructure.Add(new WS_CultureInfrastructure());
+            infrastructure.Add(new WS_ReligionInfrastructure());
+            infrastructure.Add(new WS_ConstructionInfrastructure());
 
         // TRAITS (order is not relevant)
 
@@ -220,6 +231,9 @@ public class WS_World : MonoBehaviour
                 tiles[i][j].tileRenderer.setTile(tiles[i][j]);
                 tiles[i][j].tileRenderer.setRenderPos(new Vector2Int(Mathf.CeilToInt(position.x), Mathf.CeilToInt(position.y)));
                 tiles[i][j].tileRenderer.setWorld(this);
+
+                for (int inf = 0; inf < (int)InfrastructureType.MAX; inf++)
+                    tiles[i][j].infrastructureLevels[inf] = 0;
             }
         }
 

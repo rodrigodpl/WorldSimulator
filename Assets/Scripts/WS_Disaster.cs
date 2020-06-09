@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum DisasterType { NONE, DROUGHT, FLOOD, TSUNAMI, PLAGUE }
 
-public class WS_BaseDisaster
+public class WS_Disaster
 {
     public virtual DisasterType Type() { return DisasterType.NONE; }
 
@@ -19,7 +19,7 @@ public class WS_BaseDisaster
 }
 
 
-public class DroughtDisaster : WS_BaseDisaster
+public class WS_DroughtDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.DROUGHT; }
 
@@ -33,11 +33,11 @@ public class DroughtDisaster : WS_BaseDisaster
 }
 
 
-public class FloodDisaster : WS_BaseDisaster
+public class WS_FloodDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.FLOOD; }
 
-    override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; }
+    override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; tile.infrastructurePoints -= 10.0f; }
     override public void Reverse(WS_Tile tile) { tile.habitability += 40.0f; }
 
     override public float Chance(WS_Tile tile)
@@ -47,11 +47,11 @@ public class FloodDisaster : WS_BaseDisaster
 }
 
 
-public class TsunamiDisaster : WS_BaseDisaster
+public class WS_TsunamiDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.TSUNAMI; }
 
-    override public void Apply(WS_Tile tile) { tile.sanitation -= 25; }
+    override public void Apply(WS_Tile tile) { tile.sanitation -= 25; tile.infrastructurePoints -= 30.0f; }
     override public void Reverse(WS_Tile tile) { tile.sanitation += 25; }
 
     public override int AreaOfEffect() { return (int)Random.Range(3.0f, 6.0f); }
@@ -68,7 +68,7 @@ public class TsunamiDisaster : WS_BaseDisaster
     }
 }
 
-public class PlagueDisaster : WS_BaseDisaster
+public class WS_PlagueDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.PLAGUE; }
 

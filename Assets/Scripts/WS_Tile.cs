@@ -28,9 +28,13 @@ public class WS_Tile
     // Population Data
     public float population     = 0.0f;
     public int farmers          = 0;
+    public int builders         = 0;
     public float foodUnits      = 0.0f;
-    public float sanitation       = 30;
-    public float storage          = 10;
+    public float foodEfficiency = 1.2f;
+    public float sanitation     = 30;
+    public float healthcare     = -0.2f;
+    public float storage        = 10;
+    public float decadenceGain  = 0.005f;
     public float lastPopGrowth  = 0.0f;
     public float storedFood     = 0.0f;
 
@@ -40,10 +44,16 @@ public class WS_Tile
     public WS_Culture culture   = null;
 
     // Disaster Data
-    public WS_BaseDisaster disaster = null;
+    public WS_Disaster disaster = null;
     public int disasterDuration = 0;
 
+    // Religion Data
     public WS_Religion religion = null;
+
+    // Infrastructure Data
+    public float infrastructurePoints = 0.0f;
+    public int[] infrastructureLevels = new int[(int)InfrastructureType.MAX];
+    public WS_Infrastructure plannedInfrastructure = null;
    
 
     public List<WS_Tile> Neighbors(int radius = 1)     // Returns, or loads if unloaded, the tile's neigbors in (radius)

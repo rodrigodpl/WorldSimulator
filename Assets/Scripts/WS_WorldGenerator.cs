@@ -104,26 +104,24 @@ public class WS_WorldGenerator
 
                     if (!tile.seaBody && tile.habitability >= minHabitability && tile.population == 0.0f)
                     {
-                        tile.population += tile.habitability * 50.0f * Random.Range(0.5f, 2.0f);
-                        tile.farmers = (int)Mathf.CeilToInt(tile.population / 1000.0f);
+                        tile.population += tile.habitability * 50.0f * Random.Range(0.5f, 2.5f);
                     }
 
-                    if (tile.population > 1000.0f)
+                    if (Random.Range(0.0f, 1.0f) < tile.population / 1000000)
                     {
-                        if (Random.Range(0.0f, 1.0f) < tile.population / 500000)
-                        {
-                            tile.culture = new WS_Culture(tile);
-                            cultures.Add(tile.culture);
-                        }
-
-                        if (Random.Range(0.0f, 1.0f) < tile.population / 1000000)
-                        {
-                            tile.religion = new WS_Religion(tile);
-                            religions.Add(tile.religion);
-                        }
+                        tile.culture = new WS_Culture(tile);
+                        cultures.Add(tile.culture);
+                        tile.population *= 1.5f;
                     }
 
+                    if (Random.Range(0.0f, 1.0f) < tile.population / 15000000)
+                    {
+                        tile.religion = new WS_Religion(tile);
+                        religions.Add(tile.religion);
+                        tile.population *= 1.5f;
+                    }
 
+                    tile.farmers = Mathf.CeilToInt(tile.population / 1000.0f);
 
                 }
         }
