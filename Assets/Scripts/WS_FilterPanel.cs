@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-public enum WorldRenderMode { GEOGRAPHY, POPULATION, CULTURE, RESOURCE, DISASTER, RELIGION }
+public enum WorldRenderMode { GEOGRAPHY, POPULATION, CULTURE, RESOURCE, DISASTER, RELIGION, INFRASTRUCTURE }
 
 public enum GeoFilter { ALTITUDE, TEMPERATURE, HUMIDITY, EROSION_STRENGTH, RIVER_STRENGTH, BIOME, HABITABILITY }
 public enum PopFilter { NATION, POPULATION, GROWTH }
@@ -19,6 +19,7 @@ public class WS_FilterPanel : MonoBehaviour
     public static CulFilter culFilter = CulFilter.CULTURE;
     public static ResFilter resFilter = ResFilter.RESOURCE;
     public static RelFilter relFilter = RelFilter.RELIGION;
+    public static InfrastructureType infFilter = InfrastructureType.SANITATION;
 
     public static WorldRenderMode rendermode = WorldRenderMode.GEOGRAPHY;
 
@@ -30,6 +31,7 @@ public class WS_FilterPanel : MonoBehaviour
     private GameObject ResourceDropdown = null;
     private GameObject DisasterDropdown = null;
     private GameObject ReligionDropdown = null;
+    private GameObject InfrastructureDropdown = null;
 
     private  GameObject lastDropdown = null;
 
@@ -43,6 +45,7 @@ public class WS_FilterPanel : MonoBehaviour
         ResourceDropdown    = GameObject.Find("ResourceDropdown");
         DisasterDropdown    = GameObject.Find("DisasterDropdown");
         ReligionDropdown    = GameObject.Find("ReligionDropdown");
+        InfrastructureDropdown = GameObject.Find("InfrastructureDropdown");
 
 
         ModuleDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
@@ -58,6 +61,8 @@ public class WS_FilterPanel : MonoBehaviour
         CultureDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
             delegate { onCulFilterChanged(CultureDropdown.GetComponent<Dropdown>()); });
 
+        InfrastructureDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
+            delegate { onInfFilterChanged(InfrastructureDropdown.GetComponent<Dropdown>()); });
 
         lastDropdown = GeographicDropdown;
 
@@ -66,6 +71,7 @@ public class WS_FilterPanel : MonoBehaviour
         ResourceDropdown.SetActive(false);
         DisasterDropdown.SetActive(false);
         ReligionDropdown.SetActive(false);
+        InfrastructureDropdown.SetActive(false);
     }
 
     public void onRenderModeChange(Dropdown dropdown)
@@ -82,6 +88,7 @@ public class WS_FilterPanel : MonoBehaviour
             case WorldRenderMode.RESOURCE:      ResourceDropdown.SetActive(true); lastDropdown = ResourceDropdown; break;
             case WorldRenderMode.DISASTER:      DisasterDropdown.SetActive(true); lastDropdown = DisasterDropdown; break;
             case WorldRenderMode.RELIGION:      ReligionDropdown.SetActive(true); lastDropdown = ReligionDropdown; break;
+            case WorldRenderMode.INFRASTRUCTURE: InfrastructureDropdown.SetActive(true); lastDropdown = InfrastructureDropdown; break;
         }
     }
 
@@ -101,6 +108,11 @@ public class WS_FilterPanel : MonoBehaviour
     public void onCulFilterChanged(Dropdown dropdown)
     {
         culFilter = (CulFilter)dropdown.value;
+    }
+
+    public void onInfFilterChanged(Dropdown dropdown)
+    {
+        infFilter = (InfrastructureType)dropdown.value;
     }
 }
 

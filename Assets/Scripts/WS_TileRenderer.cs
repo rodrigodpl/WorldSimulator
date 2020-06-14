@@ -160,10 +160,10 @@ public class WS_TileRenderer
                 {
                     switch (tile.disaster.Type())
                     {
-                        case DisasterType.DROUGHT:  renderColor = Color.yellow; break;
-                        case DisasterType.FLOOD:    renderColor = Color.cyan; break;
-                        case DisasterType.TSUNAMI:  renderColor = Color.red; break;
-                        case DisasterType.PLAGUE:   renderColor = Color.gray; break;
+                        case DisasterType.DROUGHT: renderColor = Color.yellow; break;
+                        case DisasterType.FLOOD: renderColor = Color.cyan; break;
+                        case DisasterType.TSUNAMI: renderColor = Color.red; break;
+                        case DisasterType.PLAGUE: renderColor = Color.gray; break;
                     }
                 }
                 else
@@ -187,8 +187,26 @@ public class WS_TileRenderer
                 }
 
                 break;
-        }
 
+
+            case WorldRenderMode.INFRASTRUCTURE:
+
+                int level = 0;
+                switch (WS_FilterPanel.infFilter)
+                {
+                    case InfrastructureType.SANITATION:     level = tile.infrastructureLevels[(int)InfrastructureType.SANITATION]; break;
+                    case InfrastructureType.FOOD:           level = tile.infrastructureLevels[(int)InfrastructureType.FOOD]; break;
+                    case InfrastructureType.HEALTHCARE:     level = tile.infrastructureLevels[(int)InfrastructureType.HEALTHCARE]; break;
+                    case InfrastructureType.DECADENCE:      level = tile.infrastructureLevels[(int)InfrastructureType.DECADENCE]; break;
+                    case InfrastructureType.CULTURE:        level = tile.infrastructureLevels[(int)InfrastructureType.CULTURE]; break;
+                    case InfrastructureType.RELIGION:       level = tile.infrastructureLevels[(int)InfrastructureType.RELIGION]; break;
+                    case InfrastructureType.CONSTRUCTION:   level = tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION]; break;
+                }
+
+                renderColor = Color.white - (Color.magenta * (level / 10.0f));
+
+                break;
+        }
 
         if (WS_TilePanel.selectedTile == tile)
         {

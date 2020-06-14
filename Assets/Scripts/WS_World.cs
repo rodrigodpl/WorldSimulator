@@ -233,7 +233,7 @@ public class WS_World : MonoBehaviour
                 tiles[i][j].tileRenderer.setWorld(this);
 
                 for (int inf = 0; inf < (int)InfrastructureType.MAX; inf++)
-                    tiles[i][j].infrastructureLevels[inf] = 0;
+                    tiles[i][j].infrastructureLevels[inf] = 1;
             }
         }
 

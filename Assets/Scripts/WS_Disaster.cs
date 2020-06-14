@@ -76,7 +76,7 @@ public class WS_PlagueDisaster : WS_Disaster
     override public void Reverse(WS_Tile tile) { tile.sanitation += 30; }
 
     public override int AreaOfEffect() { return (int)Random.Range(1.0f, 3.0f); }
-    public override int AvgDuration() { return 20; }
+    public override int AvgDuration() { return 30; }
 
     override public float Chance(WS_Tile tile)
     {
@@ -85,6 +85,6 @@ public class WS_PlagueDisaster : WS_Disaster
 
     override public float SpreadChance(WS_Tile tile)
     {
-        return 0.001f * ((tile.population / 1000.0f) - (tile.sanitation * 0.3f));
+        return 0.0003f * ((tile.population / 1000.0f) - (tile.sanitation * 0.3f));
     }
 }

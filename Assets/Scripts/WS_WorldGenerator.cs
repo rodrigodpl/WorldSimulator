@@ -114,7 +114,7 @@ public class WS_WorldGenerator
                         tile.population *= 1.5f;
                     }
 
-                    if (Random.Range(0.0f, 1.0f) < tile.population / 15000000)
+                    if (Random.Range(0.0f, 1.0f) < tile.population / 3000000)
                     {
                         tile.religion = new WS_Religion(tile);
                         religions.Add(tile.religion);
@@ -155,7 +155,7 @@ public class WS_WorldGenerator
         }
 
 
-        int advReligions = Mathf.FloorToInt(advReligionPercentage * cultures.Count);
+        int advReligions = Mathf.FloorToInt(advReligionPercentage * religions.Count);
 
         for (int i = 0; i < advReligions; i++)
         {

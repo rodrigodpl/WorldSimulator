@@ -63,7 +63,7 @@ public class InfrastructureProductionEvent : WS_BaseEvent
 
         newPoints += Random.Range(0.8f, 1.2f) * tile.builders;
 
-        newPoints *=  1.0f + tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION] * 0.2f;
+        newPoints *=  1.0f + tile.constructionBonus;
 
         tile.infrastructurePoints += newPoints;
 
@@ -74,7 +74,12 @@ public class InfrastructureProductionEvent : WS_BaseEvent
 
     protected override void Success()
     {
+        if (tile.infrastructureLevels[(int)tile.plannedInfrastructure.type] > 1)
+            WS_World.infrastructure[(int)tile.plannedInfrastructure.type].Reverse(tile, tile.infrastructureLevels[(int)tile.plannedInfrastructure.type]);
+
         tile.infrastructureLevels[(int)tile.plannedInfrastructure.type]++;
+        WS_World.infrastructure[(int)tile.plannedInfrastructure.type].Apply(tile, tile.infrastructureLevels[(int)tile.plannedInfrastructure.type]);
+
         tile.plannedInfrastructure = null;
         tile.infrastructurePoints = 0;
     }

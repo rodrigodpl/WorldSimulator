@@ -35,12 +35,12 @@ public class WS_SanitationInfrastructure : WS_Infrastructure
         nameWonder = "Great Sewers";
 
         type = InfrastructureType.SANITATION;
-        baseCost = 7;
+        baseCost = 10;
     }
 
     public override float Chance(WS_Tile tile)
     {
-        return (tile.population / 1000.0f) - tile.sanitation;
+        return (tile.population / 500.0f) - tile.sanitation;
     }
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
@@ -64,17 +64,22 @@ public class WS_FoodInfrastructure : WS_Infrastructure
         nameWonder = "Hanging Garden";
 
         type = InfrastructureType.FOOD;
-        baseCost = 7;
+        baseCost = 10;
+    }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return (tile.population - tile.foodUnits) * 0.01f;
     }
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
     {
-        tile.foodEfficiency += (Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.FOOD], 2) * 0.01f);
+        tile.foodEfficiency += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.FOOD], 2) * 0.01f;
     }
 
     public override void Reverse(WS_Tile tile, int upgradeLevel)
     {
-        tile.foodEfficiency -= (Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.FOOD], 2) * 0.01f);
+        tile.foodEfficiency -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.FOOD], 2) * 0.01f;
     }
 }
 
@@ -88,24 +93,24 @@ public class WS_HealthcareInfrastructure : WS_Infrastructure
         nameWonder = "Royal Hospital";
 
         type = InfrastructureType.HEALTHCARE;
-        baseCost = 8;
+        baseCost = 12;
     }
 
     public override float Chance(WS_Tile tile)
     {
         if (tile.lastPopGrowth < 0)
-            return Mathf.Sqrt(Mathf.Sqrt(-tile.lastPopGrowth));
+            return Mathf.Sqrt(-tile.lastPopGrowth);
         else
             return 0;
     }
     public override void Apply(WS_Tile tile, int upgradeLevel)
     {
-        tile.foodEfficiency += tile.infrastructureLevels[(int)InfrastructureType.HEALTHCARE] * 0.03f;
+        tile.healthcare += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.HEALTHCARE], 2) * 0.003f;
     }
 
     public override void Reverse(WS_Tile tile, int upgradeLevel)
     {
-        tile.foodEfficiency -= tile.infrastructureLevels[(int)InfrastructureType.HEALTHCARE] * 0.03f;
+        tile.healthcare -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.HEALTHCARE], 2) * 0.003f;
     }
 }
 
@@ -119,12 +124,22 @@ public class WS_DecadenceInfrastructure : WS_Infrastructure
         nameWonder = "Monumental Parliament";
 
         type = InfrastructureType.DECADENCE;
-        baseCost = 8;
+        baseCost = 12;
     }
 
     public override float Chance(WS_Tile tile)
     {
-        return tile.culture.decadence + tile.religion.decadence;
+        return (tile.culture.decadence + tile.religion.decadence) * 0.03f;
+    }
+
+    public override void Apply(WS_Tile tile, int upgradeLevel)
+    {
+        tile.decadenceGain -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.DECADENCE], 2) * 0.0002f;
+    }
+
+    public override void Reverse(WS_Tile tile, int upgradeLevel)
+    {
+        tile.decadenceGain += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.DECADENCE], 2) * 0.0002f;
     }
 }
 
@@ -139,15 +154,25 @@ public class WS_CultureInfrastructure : WS_Infrastructure
         nameWonder = "Art College";
 
         type = InfrastructureType.CULTURE;
-        baseCost = 10;
+        baseCost = 15;
     }
 
     public override float Chance(WS_Tile tile)
     {
         if (tile.culture.influenceBonus < 0)
-            return Mathf.Sqrt(-tile.culture.influenceBonus);
+            return Mathf.Sqrt(-tile.culture.influenceBonus * 0.3f);
         else
             return 1.0f / (tile.culture.influenceBonus + 0.5f);
+    }
+
+    public override void Apply(WS_Tile tile, int upgradeLevel)
+    {
+        tile.cultureBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CULTURE], 2) * 0.1f;
+    }
+
+    public override void Reverse(WS_Tile tile, int upgradeLevel)
+    {
+        tile.cultureBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CULTURE], 2) * 0.1f;
     }
 }
 
@@ -162,15 +187,25 @@ public class WS_ReligionInfrastructure : WS_Infrastructure
         nameWonder = "Golden Basilica";
 
         type = InfrastructureType.RELIGION;
-        baseCost = 10;
+        baseCost = 15;
     }
 
     public override float Chance(WS_Tile tile)
     {
         if (tile.religion.influenceBonus < 0)
-            return Mathf.Sqrt(-tile.religion.influenceBonus);
+            return Mathf.Sqrt(-tile.religion.influenceBonus * 0.3f);
         else
             return 1.0f / (tile.religion.influenceBonus + 0.5f);
+    }
+
+    public override void Apply(WS_Tile tile, int upgradeLevel)
+    {
+        tile.religionBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.RELIGION], 2) * 0.1f;
+    }
+
+    public override void Reverse(WS_Tile tile, int upgradeLevel)
+    {
+        tile.religionBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.RELIGION], 2) * 0.1f;
     }
 }
 
@@ -184,7 +219,7 @@ public class WS_ConstructionInfrastructure : WS_Infrastructure
         nameWonder = "Builder's Guildhall";
 
         type = InfrastructureType.CONSTRUCTION;
-        baseCost = 10;
+        baseCost = 20;
     }
 
     public override float Chance(WS_Tile tile)
@@ -196,6 +231,16 @@ public class WS_ConstructionInfrastructure : WS_Infrastructure
 
         chance /= tile.infrastructureLevels.Length;
 
-        return chance * 0.1f;
+        return chance * 0.03f;
+    }
+
+    public override void Apply(WS_Tile tile, int upgradeLevel)
+    {
+        tile.constructionBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.02f;
+    }
+
+    public override void Reverse(WS_Tile tile, int upgradeLevel)
+    {
+        tile.constructionBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.02f;
     }
 }

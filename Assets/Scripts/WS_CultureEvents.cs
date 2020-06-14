@@ -15,12 +15,17 @@ public class CultureBirthEvent : WS_BaseEvent
 
     protected override bool SuccessCheck()
     {
-        return Random.Range(0.0f, 1.0f) < tile.farmers * 0.00001f;
+        return Random.Range(0.0f, 1.0f) < tile.farmers * 0.000001f;
     }
 
     protected override void Success()
     {
         tile.culture = new WS_Culture(tile.culture, tile);
+
+        foreach (WS_Tile neighbor in tile.Neighbors())
+            if (neighbor.culture != null)
+                if (neighbor.culture.capital != neighbor && neighbor.culture.tribal)
+                    neighbor.culture = tile.culture;
     }
 }
 
@@ -55,6 +60,7 @@ public class CulturalAdoptionEvent : WS_BaseEvent
             float growthBalance = neighboringCulture.lastPopGrowth / tile.lastPopGrowth;
 
             float influenceBalance = neighboringCulture.culture.influenceBonus - tile.culture.influenceBonus;
+            influenceBalance += neighboringCulture.cultureBonus - tile.cultureBonus;
 
             float halfDistanceTile = tile.DistanceTo(tile.culture.capital) * 0.5f; 
             float halfDistanceNeighbor = neighboringCulture.DistanceTo(neighboringCulture.culture.capital) * 0.5f;

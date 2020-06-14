@@ -15,12 +15,17 @@ public class ReligiousBirthEvent : WS_BaseEvent
 
     protected override bool SuccessCheck()
     {
-        return Random.Range(0.0f, 1.0f) < tile.farmers * 0.000001f;
+        return Random.Range(0.0f, 1.0f) < tile.farmers * 0.0000001f;
     }
 
     protected override void Success()
     {
         tile.religion = new WS_Religion(tile.religion, tile);
+
+        foreach (WS_Tile neighbor in tile.Neighbors())
+            if (neighbor.religion != null)
+                if (neighbor.religion.capital != neighbor && neighbor.religion.tribal)
+                    neighbor.religion = tile.religion;
     }
 }
 
@@ -55,6 +60,7 @@ public class ReligiousAdoptionEvent : WS_BaseEvent
             float growthBalance = neighboringReligion.lastPopGrowth / tile.lastPopGrowth;
 
             float influenceBalance = neighboringReligion.religion.influenceBonus - tile.religion.influenceBonus;
+            influenceBalance += neighboringReligion.religionBonus - tile.religionBonus;
 
             float cultureBalance = neighboringReligion.culture.influenceBonus - tile.culture.influenceBonus;
 

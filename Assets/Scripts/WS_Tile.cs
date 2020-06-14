@@ -42,6 +42,7 @@ public class WS_Tile
 
     // Culture Data
     public WS_Culture culture   = null;
+    public float cultureBonus = 0.0f;
 
     // Disaster Data
     public WS_Disaster disaster = null;
@@ -49,12 +50,13 @@ public class WS_Tile
 
     // Religion Data
     public WS_Religion religion = null;
+    public float religionBonus = 0.0f;
 
     // Infrastructure Data
     public float infrastructurePoints = 0.0f;
     public int[] infrastructureLevels = new int[(int)InfrastructureType.MAX];
     public WS_Infrastructure plannedInfrastructure = null;
-   
+    public float constructionBonus = 0.0f;
 
     public List<WS_Tile> Neighbors(int radius = 1)     // Returns, or loads if unloaded, the tile's neigbors in (radius)
     {
