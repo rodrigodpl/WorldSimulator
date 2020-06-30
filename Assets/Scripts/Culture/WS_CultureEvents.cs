@@ -24,7 +24,7 @@ public class CultureBirthEvent : WS_BaseEvent
 
         foreach (WS_Tile neighbor in tile.Neighbors())
             if (neighbor.culture != null)
-                if (neighbor.culture.capital != neighbor && neighbor.culture.tribal)
+                if (neighbor.culture.capital != neighbor)
                     neighbor.culture = tile.culture;
     }
 }
@@ -62,11 +62,13 @@ public class CulturalAdoptionEvent : WS_BaseEvent
             float influenceBalance = neighboringCulture.culture.influenceBonus - tile.culture.influenceBonus;
             influenceBalance += neighboringCulture.cultureBonus - tile.cultureBonus;
 
-            float halfDistanceTile = tile.DistanceTo(tile.culture.capital) * 0.5f; 
-            float halfDistanceNeighbor = neighboringCulture.DistanceTo(neighboringCulture.culture.capital) * 0.5f;
+            float governmentBonus = 0.0f;
+
+            if (neighboringCulture.culture == neighboringCulture.government.rulingCulture)  governmentBonus += 1.0f;
+            if (tile.culture == tile.government.rulingCulture)                              governmentBonus -= 1.0f;
 
 
-            float cultureBalance = (popBalance + growthBalance + influenceBalance + (halfDistanceTile - halfDistanceNeighbor)) / 4.0f;
+            float cultureBalance = (popBalance + growthBalance + influenceBalance + governmentBonus) / 4.0f;
 
             if(Random.Range(0.0f, 1.0f) < cultureBalance * 0.001f)
             {

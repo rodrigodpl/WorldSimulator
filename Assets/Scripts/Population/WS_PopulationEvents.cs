@@ -106,8 +106,6 @@ public class PopulationGrowthEvent : WS_BaseEvent
         {
             tile.population = 0.0f;
             tile.disaster = null;
-            tile.culture = null;
-            tile.nation = null;
             tile.storedFood = 0.0f;
         }
 
@@ -168,6 +166,7 @@ public class ColonizationEvent : WS_BaseEvent
         dest.farmers++;
         dest.culture = tile.culture;
         dest.religion = tile.religion;
+        dest.government = tile.government;
     }
 
 }

@@ -93,6 +93,7 @@ public class WS_WorldGenerator
     {
         List<WS_Culture> cultures = new List<WS_Culture>();
         List<WS_Religion> religions = new List<WS_Religion>();
+        List<WS_Government> governments = new List<WS_Government>();
 
         while (cultures.Count < minCultureNum)
         {
@@ -100,7 +101,6 @@ public class WS_WorldGenerator
                 for (int j = 0; j < WS_World.sizeY; j++)
                 {
                     WS_Tile tile = world.GetTile(new Vector2Int(i, j));
-
 
                     if (!tile.seaBody && tile.habitability >= minHabitability && tile.population == 0.0f)
                     {
@@ -110,6 +110,9 @@ public class WS_WorldGenerator
                     if (Random.Range(0.0f, 1.0f) < tile.population / 1000000)
                     {
                         tile.culture = new WS_Culture(tile);
+                        tile.government = new WS_Government(tile);
+                        tile.government.rulingCulture = tile.culture;
+                        governments.Add(tile.government);
                         cultures.Add(tile.culture);
                         tile.population *= 1.5f;
                     }
@@ -144,12 +147,6 @@ public class WS_WorldGenerator
                 cultures.Add(newCulture);
                 cultures.Remove(oldCulture);
 
-                //WS_Nation newNation = new WS_Nation();
-                //newNation.nationColor = newCulture.color;
-                //capital.nation = newNation;
-                //newNation.capital = capital;
-                //capital.nation.rulingCulture = capital.culture;
-
                 advCultures--;
             }
         }
@@ -172,12 +169,6 @@ public class WS_WorldGenerator
                 religions.Add(newReligion);
                 religions.Remove(oldReligion);
 
-                //WS_Nation newNation = new WS_Nation();
-                //newNation.nationColor = newCulture.color;
-                //capital.nation = newNation;
-                //newNation.capital = capital;
-                //capital.nation.rulingCulture = capital.culture;
-
                 advReligions--;
             }
         }
@@ -193,20 +184,31 @@ public class WS_WorldGenerator
                     if (tile.culture == null)
                     {
                         WS_Culture nearestCulture = null;
-                        int minDist = int.MaxValue;
+                        WS_Government nearestGovernment = null;
+                        int minCulDist = int.MaxValue;
+                        int minGovDist = int.MaxValue;
 
                         foreach (WS_Culture culture in cultures)
                         {
                             int distance = tile.DistanceTo(culture.capital) + Mathf.FloorToInt(Random.Range(-1.4f, 1.4f));
 
-                            if (distance < minDist)
+                            if (distance < minCulDist)
                             {
-                                minDist = distance;
+                                minCulDist = distance;
                                 nearestCulture = culture;
+                            }
+
+                            distance = tile.DistanceTo(culture.capital);
+
+                            if (distance < minGovDist)
+                            {
+                                minGovDist = distance;
+                                nearestGovernment = culture.capital.government;
                             }
                         }
 
                         tile.culture = nearestCulture;
+                        tile.government = nearestGovernment;
                     }
 
                     if(tile.religion == null)
@@ -229,6 +231,9 @@ public class WS_WorldGenerator
                     }
                 }
             }
+
+        foreach (WS_Government government in governments)
+            government.rulingReligion = government.capital.religion;
 
     }
 

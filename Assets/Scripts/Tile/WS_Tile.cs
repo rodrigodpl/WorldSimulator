@@ -38,8 +38,6 @@ public class WS_Tile
     public float lastPopGrowth  = 0.0f;
     public float storedFood     = 0.0f;
 
-    public WS_Nation nation = null;
-
     // Culture Data
     public WS_Culture culture   = null;
     public float cultureBonus = 0.0f;
@@ -57,6 +55,9 @@ public class WS_Tile
     public int[] infrastructureLevels = new int[(int)InfrastructureType.MAX];
     public WS_Infrastructure plannedInfrastructure = null;
     public float constructionBonus = 0.0f;
+
+    //Government Data
+    public WS_Government government = null;
 
     public List<WS_Tile> Neighbors(int radius = 1)     // Returns, or loads if unloaded, the tile's neigbors in (radius)
     {

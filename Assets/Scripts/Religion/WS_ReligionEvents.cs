@@ -24,7 +24,7 @@ public class ReligiousBirthEvent : WS_BaseEvent
 
         foreach (WS_Tile neighbor in tile.Neighbors())
             if (neighbor.religion != null)
-                if (neighbor.religion.capital != neighbor && neighbor.religion.tribal)
+                if (neighbor.religion.capital != neighbor)
                     neighbor.religion = tile.religion;
     }
 }
@@ -64,7 +64,12 @@ public class ReligiousAdoptionEvent : WS_BaseEvent
 
             float cultureBalance = neighboringReligion.culture.influenceBonus - tile.culture.influenceBonus;
 
-            float religionBalance = (popBalance + growthBalance + influenceBalance + cultureBalance) / 4.0f;
+            float governmentBonus = 0.0f;
+
+            if (neighboringReligion.religion == neighboringReligion.government.rulingReligion)  governmentBonus += 1.0f;
+            if (tile.religion == tile.government.rulingReligion)                                governmentBonus -= 1.0f;
+
+            float religionBalance = (popBalance + growthBalance + influenceBalance + cultureBalance + governmentBonus) / 5.0f;
 
             if (Random.Range(0.0f, 1.0f) < religionBalance * 0.0005f)
             {

@@ -15,8 +15,8 @@ public class WS_World : MonoBehaviour
     public static List<WS_Infrastructure> infrastructure    = new List<WS_Infrastructure>();
     private WS_WorldGenerator worldGenerator                = null;     // world generator, which fills blank tiles with geographical data
 
-    public static int sizeX                 = 200;      // number of columns in the map
-    public static int sizeY                 = 100;      // number of rows in the map
+    public static int sizeX                 = 150;      // number of columns in the map
+    public static int sizeY                 = 120;      // number of rows in the map
     
     // Rendering  Variables
     [HideInInspector] public float lowestPoint          = 0.0f;         // all these variables are used for reference when drawing 
@@ -96,6 +96,11 @@ public class WS_World : MonoBehaviour
             infrastructure.Add(new WS_ReligionInfrastructure());
             infrastructure.Add(new WS_ConstructionInfrastructure());
 
+
+        // Government Events
+        eventPool.Add(new UprisingReligiousEvent());
+        eventPool.Add(new UprisingCulturalEvent());
+
         // TRAITS (order is not relevant)
 
         // Culture Traits
@@ -166,6 +171,9 @@ public class WS_World : MonoBehaviour
 
     private void UpdateWorld()
     {
+        if (Input.GetKey(KeyCode.Escape))
+            Application.Quit();
+
         timer.Start();
 
         float time = 0.0f;
@@ -266,7 +274,7 @@ public class WS_World : MonoBehaviour
         output.Apply();
 
         realSize = new Vector2(output.width / 100.0f, output.height / 100.0f);
-        transform.Translate(new Vector3(realSize.x / 2.0f, realSize.y / 2.0f, 0.0f));
+        transform.Translate(new Vector3(realSize.x / 2.0f + 3.5f, realSize.y / 2.0f - 1.0f, 0.0f));
 
         UpdateWorld();
     }

@@ -105,12 +105,12 @@ public class WS_TileRenderer
                     case PopFilter.NATION:  // set color based on habitability, red to black if negative, black to green if positive
 
 
-                        if (tile.nation != null)
+                        if (tile.government != null)
                         {
-                            if (tile == tile.nation.capital)
-                                renderColor = tile.nation.nationColor - (Color.white * 0.1f);
+                            if (tile == tile.government.capital)
+                                renderColor = tile.government.nationColor - (Color.white * 0.1f);
                             else
-                                renderColor = tile.nation.nationColor;
+                                renderColor = tile.government.nationColor;
                         }
                         else
                             renderColor = Color.white;
