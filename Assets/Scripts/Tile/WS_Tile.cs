@@ -18,7 +18,6 @@ public class WS_Tile
     public float airPressure        = float.NaN;
 
     public Biome biome = Biome.MAX_BIOMES;
-    public List<WS_Resource> Resources = new List<WS_Resource>();
 
     public WS_Tile erosionDirection = null;
     public List<WS_Tile> riverDirection =  new List<WS_Tile>();
@@ -29,6 +28,7 @@ public class WS_Tile
     public float population     = 0.0f;
     public int farmers          = 0;
     public int builders         = 0;
+    public int traders          = 0;
     public float foodUnits      = 0.0f;
     public float foodEfficiency = 1.2f;
     public float sanitation     = 30;
@@ -58,6 +58,12 @@ public class WS_Tile
 
     //Government Data
     public WS_Government government = null;
+
+    // Commerce 
+    public float prosperity = 0.0f;
+    public WS_ResourceSource resource = null;
+    public WS_ResourceStack[] resStacks = new WS_ResourceStack[(int)ResourceType.MAX];
+    public WS_CommerceCaravan caravan = null;
 
     public List<WS_Tile> Neighbors(int radius = 1)     // Returns, or loads if unloaded, the tile's neigbors in (radius)
     {
@@ -100,5 +106,12 @@ public class WS_Tile
         return distanceX + distanceY;
     }
 
+    public bool IsCoastal()
+    {
+        foreach (WS_Tile neighbor in Neighbors())
+            if (neighbor.seaBody)
+                return true;
 
+        return false;
+    }
 }

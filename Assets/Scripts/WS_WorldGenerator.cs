@@ -429,11 +429,8 @@ public class WS_WorldGenerator
 
                     bool waterFound = false;
 
-                    for (int r = 1; r <= 3; r++)
+                    for (int r = 1; r <= 3 && !waterFound; r++)
                     {
-                        if (waterFound)
-                            break;
-
                         foreach (WS_Tile neighbor in tile.Neighbors(r))
                             if (neighbor.seaBody)
                             {
@@ -487,11 +484,8 @@ public class WS_WorldGenerator
                     tile.humidity -= (tile.altitude / 1000.0f) * altitudeHumLoss;    // Altitude
 
                     bool waterFound = false;
-                    for (int r = 1; r <= 3; r++)
+                    for (int r = 1; r <= 3 && !waterFound; r++)
                     {
-                        if (waterFound)
-                            break;
-
                         foreach (WS_Tile neighbor in tile.Neighbors(r))
                             if (neighbor.altitude < 0.0f)
                             {
@@ -902,165 +896,41 @@ public class WS_WorldGenerator
 
                 }
 
-                bool isCoastal = false;
-                foreach (WS_Tile neighbor in tile.Neighbors())
-                    if (neighbor.seaBody && !isCoastal)
-                        isCoastal = true;
-
-                    // RESOURCES
-                    if (!tile.seaBody)
+                // RESOURCES
+                if (!tile.seaBody)
                 {
-                    for (int r = 0; r < (int)ResourceType.MAX_TYPES; r++)
+                    float max_chance = 0.0f;
+                    List<WS_ResourceSource> possibleRes = new List<WS_ResourceSource>();
+
+                    for (int r = 0; r < (int)ResourceType.MAX; r++)
                     {
-                        ResourceType type = (ResourceType)r;
-                        WS_Resource resource = new WS_Resource();
+                        float chance = WS_World.resources[r].Chance(tile);
 
-                        switch (type)
+                        if (chance > 0.0f)
                         {
-                            // METALS
-                            case ResourceType.IRON:
-                                if (Random.Range(0.0f, 10.0f) < 0.15f) resource.type = ResourceType.IRON;
-                                break;
-                            case ResourceType.COPPER:
-                                if (Random.Range(0.0f, 10.0f) < 0.08f) resource.type = ResourceType.COPPER;
-                                break;
-                            case ResourceType.LEAD:
-                                if (Random.Range(0.0f, 10.0f) < 0.06f) resource.type = ResourceType.LEAD;
-                                break;
-                            case ResourceType.TIN:
-                                if (Random.Range(0.0f, 10.0f) < 0.05f) resource.type = ResourceType.TIN;
-                                break;
-                            case ResourceType.SILVER:
-                                if (Random.Range(0.0f, 10.0f) < 0.04f) resource.type = ResourceType.SILVER;
-                                break;
-                            case ResourceType.GOLD:
-
-                                float riverBonus = 0.0f;
-
-                                if (tile.riverDirection.Count > 0)
-                                    riverBonus = 0.25f;
-
-                                if (Random.Range(0.0f, 10.0f) < riverBonus) resource.type = ResourceType.GOLD;
-                                break;
-                            case ResourceType.URANIUM:
-                                if (Random.Range(0.0f, 10.0f) < 0.02f) resource.type = ResourceType.URANIUM;
-                                break;
-
-                            // STONE
-                            case ResourceType.GRANITE:
-                                if (Random.Range(0.0f, 10.0f) < 0.2f) resource.type = ResourceType.GRANITE;
-                                break;
-                            case ResourceType.CLAY:
-                                if (Random.Range(0.0f, 10.0f) < 0.1f) resource.type = ResourceType.CLAY;
-                                break;
-                            case ResourceType.MARBLE:
-                                if (Random.Range(0.0f, 10.0f) < 0.05f) resource.type = ResourceType.MARBLE;
-                                break;
-                            case ResourceType.JADE:
-                                if (Random.Range(0.0f, 10.0f) < 0.03f) resource.type = ResourceType.JADE;
-                                break;
-                            case ResourceType.SALT:
-
-                                float coastalBonus = 0.0f;
-
-                                if(isCoastal)
-                                    coastalBonus = 0.5f;
-
-                                if (Random.Range(0.0f, 10.0f) < coastalBonus) resource.type = ResourceType.SALT;
-                                break;
-
-                            // ORGANIC
-                            case ResourceType.WOOD:
-                                if (tile.biome == Biome.BOREAL_FOREST || tile.biome == Biome.TROPICAL_JUNGLE)
-                                {
-                                    if (Random.Range(0.0f, 10.0f) < 2.0f)
-                                        resource.type = ResourceType.WOOD;
-                                }
-                                else if (tile.biome == Biome.ALPINE_FOREST || tile.biome == Biome.TEMPERATE_FOREST)
-                                    if (Random.Range(0.0f, 10.0f) < 4.0f)
-                                        resource.type = ResourceType.WOOD;
-
-                                break;
-
-                            case ResourceType.PASTURES:
-                                if (tile.biome == Biome.TEMPERATE_GRASSLAND || tile.biome == Biome.TROPICAL_GRASSLAND)
-                                {
-                                    if (Random.Range(0.0f, 10.0f) < 1.0f)
-                                        resource.type = ResourceType.PASTURES;
-                                }
-                                else if (tile.biome == Biome.SAVANNAH)
-                                    if (Random.Range(0.0f, 10.0f) < 0.3f)
-                                        resource.type = ResourceType.PASTURES;
-
-                                break;
-
-                            case ResourceType.FISH:
-
-                                float chance = 0.0f;
-
-                                if (isCoastal)
-                                    chance += 1.0f;
-                                if (tile.biome == Biome.WETLANDS)
-                                    chance += 1.0f;
-                                if (tile.riverDirection.Count > 0)
-                                    chance += 2.0f;
-
-                                if (Random.Range(0.0f, 10.0f) < chance)
-                                    resource.type = ResourceType.FISH;
-
-                                break;
-
-                            case ResourceType.HUNT:
-                                if (tile.biome == Biome.TROPICAL_JUNGLE || tile.biome == Biome.SAVANNAH)
-                                {
-                                    if (Random.Range(0.0f, 10.0f) < 0.5f)
-                                        resource.type = ResourceType.HUNT;
-                                }
-                                else if (tile.biome == Biome.ALPINE_FOREST || tile.biome == Biome.TEMPERATE_FOREST)
-                                {
-                                    if (Random.Range(0.0f, 10.0f) < 0.2f)
-                                        resource.type = ResourceType.HUNT;
-                                }
-
-                                break;
-
-                            case ResourceType.FURS:
-                                if (tile.biome == Biome.TUNDRA || tile.biome == Biome.ALPINE)
-                                    if (Random.Range(0.0f, 10.0f) < 0.6f)
-                                        resource.type = ResourceType.FURS;
-
-                                break;
-
-                            case ResourceType.SPICES:
-                                if (tile.biome == Biome.TROPICAL_JUNGLE || tile.biome == Biome.TROPICAL_GRASSLAND || tile.biome == Biome.TEMPERATE_SHRUBLAND)
-                                    if (Random.Range(0.0f, 10.0f) < 0.6f)
-                                        resource.type = ResourceType.SPICES;
-
-                                break;
-
-                            case ResourceType.OPIOIDS:
-                                if (tile.biome == Biome.TEMPERATE_SHRUBLAND || tile.biome == Biome.ALPINE_SHRUBLAND)
-                                    if (Random.Range(0.0f, 10.0f) < 0.6f)
-                                        resource.type = ResourceType.OPIOIDS;
-
-                                break;
-
-                            case ResourceType.COAL:
-                                if (Random.Range(0.0f, 10.0f) < 0.1f) resource.type = ResourceType.COAL; break;
-
-
-                            case ResourceType.OIL:
-                                if (Random.Range(0.0f, 10.0f) < 0.03f) resource.type = ResourceType.OIL; break;
-                        }
-
-                        if (resource.type != ResourceType.NONE)
-                        {
-                            resource.amount = Random.Range(5000.0f, 20000.0f);
-                            resource.quality = Random.Range(50.0f, 100.0f);
-                            tile.Resources.Add(resource);
+                            max_chance += chance;
+                            possibleRes.Add(WS_World.resources[r]);
                         }
                     }
+                    float selector = Random.Range(0.0f, max_chance - 0.01f);
+
+                    foreach (WS_ResourceSource res in possibleRes)
+                    {
+                        float chance = res.Chance(tile);
+
+                        if (selector < chance)
+                        {
+                            WS_ResourceSource newRes = new WS_ResourceSource(res.type);
+                            newRes.abundance = Random.Range(0.2f, 1.0f);
+                            newRes.quality = Random.Range(0.1f, 1.0f);
+                            tile.resource = newRes;
+                            break;
+                        }
+                        else
+                            selector -= chance;
+                    }
                 }
+            
 
                 // HABITABILITY
 

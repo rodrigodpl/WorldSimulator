@@ -13,6 +13,7 @@ public class WS_World : MonoBehaviour
     public static List<WS_Trait> religionTraits             = new List<WS_Trait>();
     public static List<WS_Disaster> disasters               = new List<WS_Disaster>();
     public static List<WS_Infrastructure> infrastructure    = new List<WS_Infrastructure>();
+    public static List<WS_ResourceSource> resources         = new List<WS_ResourceSource>();
     private WS_WorldGenerator worldGenerator                = null;     // world generator, which fills blank tiles with geographical data
 
     public static int sizeX                 = 150;      // number of columns in the map
@@ -87,7 +88,7 @@ public class WS_World : MonoBehaviour
         // Infrastructure Events
         eventPool.Add(new InfrastructureProductionEvent());
 
-        // Infrastructures
+            // Infrastructures
             infrastructure.Add(new WS_SanitationInfrastructure());
             infrastructure.Add(new WS_FoodInfrastructure());
             infrastructure.Add(new WS_HealthcareInfrastructure());
@@ -100,6 +101,38 @@ public class WS_World : MonoBehaviour
         // Government Events
         eventPool.Add(new UprisingReligiousEvent());
         eventPool.Add(new UprisingCulturalEvent());
+
+        // Diplomacy Events
+        eventPool.Add(new FindNeighborsEvent());
+        eventPool.Add(new OpinionsEvent());
+        eventPool.Add(new TreatyProposalEvent());
+        eventPool.Add(new TreatyEndedEvent());
+
+
+        // Commerce Events
+        eventPool.Add(new WS_ResourceConsumptionEvent());
+        eventPool.Add(new WS_CaravanJourneyEvent());
+
+            // Resources
+            resources.Add(new WS_ResourceSource(ResourceType.CLAY));
+            resources.Add(new WS_ResourceSource(ResourceType.COAL));
+            resources.Add(new WS_ResourceSource(ResourceType.COPPER));
+            resources.Add(new WS_ResourceSource(ResourceType.FISH));
+            resources.Add(new WS_ResourceSource(ResourceType.FURS));
+            resources.Add(new WS_ResourceSource(ResourceType.GOLD));
+            resources.Add(new WS_ResourceSource(ResourceType.GRANITE));
+            resources.Add(new WS_ResourceSource(ResourceType.HUNT));
+            resources.Add(new WS_ResourceSource(ResourceType.IRON));
+            resources.Add(new WS_ResourceSource(ResourceType.JADE));
+            resources.Add(new WS_ResourceSource(ResourceType.LEAD));
+            resources.Add(new WS_ResourceSource(ResourceType.MARBLE));
+            resources.Add(new WS_ResourceSource(ResourceType.OPIOIDS));
+            resources.Add(new WS_ResourceSource(ResourceType.PASTURES));
+            resources.Add(new WS_ResourceSource(ResourceType.SALT));
+            resources.Add(new WS_ResourceSource(ResourceType.SILVER));
+            resources.Add(new WS_ResourceSource(ResourceType.SPICES));
+            resources.Add(new WS_ResourceSource(ResourceType.TIN));
+            resources.Add(new WS_ResourceSource(ResourceType.WOOD));
 
         // TRAITS (order is not relevant)
 
@@ -179,10 +212,10 @@ public class WS_World : MonoBehaviour
         float time = 0.0f;
         switch (speed)
         {
-            case SimulationSpeed.SLOW: time = 2.0f; break;
-            case SimulationSpeed.NORMAL: time = 1.0f; break;
-            case SimulationSpeed.FAST: time = 0.5f; break;
-            case SimulationSpeed.FASTEST: time = 0.1f; break;
+            case SimulationSpeed.SLOW:      time = 2.0f; break;
+            case SimulationSpeed.NORMAL:    time = 1.0f; break;
+            case SimulationSpeed.FAST:      time = 0.5f; break;
+            case SimulationSpeed.FASTEST:   time = 0.1f; break;
         }
 
         if (time == 0.0f)  // PAUSED
@@ -242,6 +275,10 @@ public class WS_World : MonoBehaviour
 
                 for (int inf = 0; inf < (int)InfrastructureType.MAX; inf++)
                     tiles[i][j].infrastructureLevels[inf] = 1;
+
+
+                for (int res = 0; res < (int)ResourceType.MAX; res++)
+                    tiles[i][j].resStacks[res] = new WS_ResourceStack((ResourceType)res);
             }
         }
 

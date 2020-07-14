@@ -5416,11 +5416,11 @@ MonoBehaviour:
     m_Options:
     - m_Text: All
       m_Image: {fileID: 0}
-    - m_Text: Organic
-      m_Image: {fileID: 0}
     - m_Text: Metal
       m_Image: {fileID: 0}
     - m_Text: Stone
+      m_Image: {fileID: 0}
+    - m_Text: Organic
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:

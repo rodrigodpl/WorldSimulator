@@ -8,17 +8,13 @@ public enum WorldRenderMode { GEOGRAPHY, POPULATION, CULTURE, RESOURCE, DISASTER
 
 public enum GeoFilter { ALTITUDE, TEMPERATURE, HUMIDITY, EROSION_STRENGTH, RIVER_STRENGTH, BIOME, HABITABILITY }
 public enum PopFilter { NATION, POPULATION, GROWTH }
-public enum CulFilter { CULTURE }
-public enum ResFilter { RESOURCE }
-public enum RelFilter { RELIGION }
+public enum ResFilter { ALL, METALS, STONE, ORGANIC }
 
 public class WS_FilterPanel : MonoBehaviour
 {
     public static GeoFilter geoFilter = GeoFilter.BIOME;
     public static PopFilter popFilter = PopFilter.NATION;
-    public static CulFilter culFilter = CulFilter.CULTURE;
-    public static ResFilter resFilter = ResFilter.RESOURCE;
-    public static RelFilter relFilter = RelFilter.RELIGION;
+    public static ResFilter resFilter = ResFilter.ALL;
     public static InfrastructureType infFilter = InfrastructureType.SANITATION;
 
     public static WorldRenderMode rendermode = WorldRenderMode.GEOGRAPHY;
@@ -39,13 +35,13 @@ public class WS_FilterPanel : MonoBehaviour
     {
         ModuleDropdown = GameObject.Find("ModuleDropdown");
 
-        GeographicDropdown  = GameObject.Find("GeographicDropdown");
-        PopulationDropdown  = GameObject.Find("PopulationDropdown");
-        CultureDropdown     = GameObject.Find("CultureDropdown");
-        ResourceDropdown    = GameObject.Find("ResourceDropdown");
-        DisasterDropdown    = GameObject.Find("DisasterDropdown");
-        ReligionDropdown    = GameObject.Find("ReligionDropdown");
-        InfrastructureDropdown = GameObject.Find("InfrastructureDropdown");
+        GeographicDropdown      = GameObject.Find("GeographicDropdown");
+        PopulationDropdown      = GameObject.Find("PopulationDropdown");
+        CultureDropdown         = GameObject.Find("CultureDropdown");
+        ResourceDropdown        = GameObject.Find("ResourceDropdown");
+        DisasterDropdown        = GameObject.Find("DisasterDropdown");
+        ReligionDropdown        = GameObject.Find("ReligionDropdown");
+        InfrastructureDropdown  = GameObject.Find("InfrastructureDropdown");
 
 
         ModuleDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
@@ -58,11 +54,12 @@ public class WS_FilterPanel : MonoBehaviour
         PopulationDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
             delegate { onPopFilterChanged(PopulationDropdown.GetComponent<Dropdown>()); });
 
-        CultureDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
-            delegate { onCulFilterChanged(CultureDropdown.GetComponent<Dropdown>()); });
+        ResourceDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
+            delegate { onResFilterChanged(ResourceDropdown.GetComponent<Dropdown>()); });
 
         InfrastructureDropdown.GetComponent<Dropdown>().onValueChanged.AddListener(
             delegate { onInfFilterChanged(InfrastructureDropdown.GetComponent<Dropdown>()); });
+
 
         lastDropdown = GeographicDropdown;
 
@@ -82,13 +79,13 @@ public class WS_FilterPanel : MonoBehaviour
 
         switch(rendermode)
         {
-            case WorldRenderMode.GEOGRAPHY:     GeographicDropdown.SetActive(true); lastDropdown = GeographicDropdown; break;
-            case WorldRenderMode.POPULATION:    PopulationDropdown.SetActive(true); lastDropdown = PopulationDropdown; break;
-            case WorldRenderMode.CULTURE:       CultureDropdown.SetActive(true); lastDropdown = CultureDropdown; break;
-            case WorldRenderMode.RESOURCE:      ResourceDropdown.SetActive(true); lastDropdown = ResourceDropdown; break;
-            case WorldRenderMode.DISASTER:      DisasterDropdown.SetActive(true); lastDropdown = DisasterDropdown; break;
-            case WorldRenderMode.RELIGION:      ReligionDropdown.SetActive(true); lastDropdown = ReligionDropdown; break;
-            case WorldRenderMode.INFRASTRUCTURE: InfrastructureDropdown.SetActive(true); lastDropdown = InfrastructureDropdown; break;
+            case WorldRenderMode.GEOGRAPHY:         GeographicDropdown.SetActive(true); lastDropdown = GeographicDropdown; break;
+            case WorldRenderMode.POPULATION:        PopulationDropdown.SetActive(true); lastDropdown = PopulationDropdown; break;
+            case WorldRenderMode.CULTURE:           CultureDropdown.SetActive(true); lastDropdown = CultureDropdown; break;
+            case WorldRenderMode.RESOURCE:          ResourceDropdown.SetActive(true); lastDropdown = ResourceDropdown; break;
+            case WorldRenderMode.DISASTER:          DisasterDropdown.SetActive(true); lastDropdown = DisasterDropdown; break;
+            case WorldRenderMode.RELIGION:          ReligionDropdown.SetActive(true); lastDropdown = ReligionDropdown; break;
+            case WorldRenderMode.INFRASTRUCTURE:    InfrastructureDropdown.SetActive(true); lastDropdown = InfrastructureDropdown; break;
         }
     }
 
@@ -105,14 +102,14 @@ public class WS_FilterPanel : MonoBehaviour
         popFilter = (PopFilter)dropdown.value;
     }
 
-    public void onCulFilterChanged(Dropdown dropdown)
-    {
-        culFilter = (CulFilter)dropdown.value;
-    }
-
     public void onInfFilterChanged(Dropdown dropdown)
     {
         infFilter = (InfrastructureType)dropdown.value;
+    }
+
+    public void onResFilterChanged(Dropdown dropdown)
+    {
+        resFilter = (ResFilter)dropdown.value;
     }
 }
 

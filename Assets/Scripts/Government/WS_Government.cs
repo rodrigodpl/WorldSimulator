@@ -26,8 +26,7 @@ public class WS_Government
     public WS_Tile capital = null;
 
     public List<WS_Government> borderingGovernments = new List<WS_Government>();
-    public List<int> borderingOpinions = new List<int>();
-    public bool updateOpinion = true;
+    public List<float> borderingOpinions = new List<float>();
 
     public List<WS_Treaty> treaties = new List<WS_Treaty>();
 
