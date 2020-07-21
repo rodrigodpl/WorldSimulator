@@ -8,27 +8,22 @@ public class FindNeighborsEvent : WS_BaseEvent
 
     protected override void Success()
     {
-        List<WS_Government> foundGovs = new List<WS_Government>();
-
         foreach (WS_Tile neighbor in tile.Neighbors())
         {
             if (neighbor.government != null)
             {
-                if (neighbor.government != tile.government && !tile.government.borderingGovernments.Contains(neighbor.government))
+                if (neighbor.government != tile.government)
                 {
-                    foundGovs.Add(neighbor.government);
-                    tile.government.borderingGovernments.Add(neighbor.government);
-                    tile.government.borderingOpinions.Add(0);
-                }
-            }
-        }
+                    int index = tile.government.borderingGovernments.IndexOf(neighbor.government);
 
-        for (int i = 0; i < tile.government.borderingGovernments.Count; i++)
-        {
-            if (!foundGovs.Contains(tile.government.borderingGovernments[i]))
-            {
-                tile.government.borderingGovernments.RemoveAt(i);
-                i--;
+                    if (index == -1)
+                    {
+                        tile.government.borderingGovernments.Add(neighbor.government);
+                        tile.government.borderingOpinions.Add(10000);
+                    }
+                    else if(tile.government.borderingOpinions[index] < 1000)
+                        tile.government.borderingOpinions[index] += 10000;
+                }
             }
         }
     }
@@ -38,29 +33,52 @@ public class OpinionsEvent : WS_BaseEvent
 {
     public OpinionsEvent() { eventName = "Opinions"; module = EventModule.DIPLOMACY; }
 
+    protected override bool FireCheck()
+    {
+        return tile.government.capital == tile && tile.government.borderingGovernments.Count > 1;
+    }
+
     protected override void Success()
     {
+        for (int i = 0; i < tile.government.borderingGovernments.Count; i++)
+        {
+            if (tile.government.borderingOpinions[i] < 1000)
+            {
+                tile.government.borderingGovernments.RemoveAt(i);
+                tile.government.borderingOpinions.RemoveAt(i);
+                i--;
+            }
+            else
+                tile.government.borderingOpinions[i] -= 10000;
+        }
+
         int index = 0;
         foreach (WS_Government gov in tile.government.borderingGovernments)
         {
             int opinion = 0;
 
-            if (gov.rulingCulture == tile.government.rulingCulture) opinion += 20;
+            if (gov.rulingCulture.tribal)
+                opinion -= 5;
+
+            if (gov.rulingReligion.tribal)
+                opinion -= 5;
+
+            if (gov.rulingCulture == tile.government.rulingCulture)         opinion += 20;
             else opinion -= 20;
 
-            if (gov.rulingReligion == tile.government.rulingReligion) opinion += 20;
+            if (gov.rulingReligion == tile.government.rulingReligion)       opinion += 20;
             else opinion -= 20;
 
             if (gov.powerDistribution == tile.government.powerDistribution) opinion += 10;
             else opinion -= 10;
 
-            if (gov.powerHolder == tile.government.powerHolder) opinion += 10;
+            if (gov.powerHolder == tile.government.powerHolder)             opinion += 10;
             else opinion -= 10;
 
-            if (gov.centralization == tile.government.centralization) opinion += 10;
+            if (gov.centralization == tile.government.centralization)       opinion += 10;
             else opinion -= 10;
 
-            if (gov.authoritarianism == tile.government.authoritarianism) opinion += 10;
+            if (gov.authoritarianism == tile.government.authoritarianism)   opinion += 10;
             else opinion -= 10;
 
             opinion += (int)(tile.government.legitimacy / 50.0f);
@@ -71,10 +89,12 @@ public class OpinionsEvent : WS_BaseEvent
                 {
                     switch (treaty.type)
                     {
-                        case TreatyType.ALLIANCE: opinion += 30; break;
-                        case TreatyType.TRADE_AGREEMENT: opinion += 20; break;
-                        case TreatyType.TRADE_EMBARGO: opinion -= 30; break;
-                        case TreatyType.WAR: opinion -= 100; break;
+                        case TreatyType.ALLIANCE:           opinion += 30; break;
+                        case TreatyType.TRADE_AGREEMENT:    opinion += 20; break;
+                        case TreatyType.PEACE:              opinion += 10; break;
+                        case TreatyType.TRUCE:              opinion -= 10; break;
+                        case TreatyType.TRADE_EMBARGO:      opinion -= 30; break;
+                        case TreatyType.WAR:                opinion -= 100; break;
                     }
                 }
             }
@@ -112,37 +132,57 @@ public class TreatyProposalEvent : WS_BaseEvent
         target = tile.government.borderingGovernments[selector];
 
 
-        if (opinion > 50.0f)        treaty = TreatyType.ALLIANCE;
-        else if (opinion > 30.0f)   treaty = TreatyType.TRADE_AGREEMENT;
+        if (opinion > 50.0f)                        treaty = TreatyType.ALLIANCE;
+        else if (opinion > 30.0f)                   treaty = TreatyType.TRADE_AGREEMENT;
 
-        else if (opinion > -30.0f)  treaty = TreatyType.PEACE;
-        else if (opinion > -50.0f)  treaty = TreatyType.TRADE_EMBARGO;
-        else                        treaty = TreatyType.WAR;
+        else if (opinion > -30.0f)                  treaty = TreatyType.PEACE;
+        else if (opinion > -50.0f)                  treaty = TreatyType.TRADE_EMBARGO;
 
+        else if (tile.government.soldierPool == 0)  treaty = TreatyType.WAR;
 
-        return Random.Range(0.0f, 1.0f) < 0.1f;
+        if(treaty == TreatyType.WAR)
+            return Random.Range(0.0f, 1.0f) < 0.03f;
+        else
+            return Random.Range(0.0f, 1.0f) < 0.1f;
     }
 
     protected override void Success()
     {
-        foreach(WS_Treaty existingTreaty in tile.government.treaties)
-            if(existingTreaty.target == target)
+        foreach (WS_Treaty existingTreaty in tile.government.treaties)
+        {
+            if (existingTreaty.type == TreatyType.WAR)
+                if(treaty == TreatyType.WAR || existingTreaty.target == target)
+                    return;
+
+            else if (existingTreaty.target == target)
             {
-                if(existingTreaty.type != treaty)
+                if (existingTreaty.type != treaty && existingTreaty.type != TreatyType.TRUCE)
+                {
                     tile.government.treaties.Remove(existingTreaty);
+                    break;
+                }
                 else
                     return;
             }
+        }
 
-        WS_Treaty newTreaty = new WS_Treaty();
-        newTreaty.type = treaty;
-        newTreaty.remainingDuration = Mathf.FloorToInt(Random.Range(30.0f, 100.0f));
+        WS_Treaty newTreatyA = new WS_Treaty();
+        WS_Treaty newTreatyB = new WS_Treaty();
+        newTreatyA.type = newTreatyB.type = treaty;
 
-        newTreaty.target = target;
-        tile.government.treaties.Add(newTreaty);
+        newTreatyA.remainingDuration = newTreatyB.remainingDuration = Mathf.FloorToInt(Random.Range(30.0f, 100.0f));
 
-        newTreaty.target = tile.government;
-        target.treaties.Add(newTreaty);
+        newTreatyA.target = target;
+        tile.government.treaties.Add(newTreatyA);
+
+        newTreatyB.target = tile.government;
+        target.treaties.Add(newTreatyB);
+
+        if (newTreatyA.type == TreatyType.WAR)
+        {
+            tile.government.warNum++;
+            target.warNum++;
+        }
     }
 }
 
@@ -163,7 +203,16 @@ public class TreatyEndedEvent : WS_BaseEvent
             treaty.remainingDuration--;
             if (treaty.remainingDuration <= 0)
             {
-                tile.government.treaties.Remove(treaty);
+                if(treaty.type == TreatyType.WAR)
+                {
+                    treaty.type = TreatyType.TRUCE;
+                    treaty.remainingDuration = 30;
+                    tile.government.warNum--;
+                    tile.government.warScore = 50.0f;
+                }
+                else
+                    tile.government.treaties.Remove(treaty);
+
                 return;
             }
         }

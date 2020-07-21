@@ -108,7 +108,6 @@ public class WS_World : MonoBehaviour
         eventPool.Add(new TreatyProposalEvent());
         eventPool.Add(new TreatyEndedEvent());
 
-
         // Commerce Events
         eventPool.Add(new WS_ResourceConsumptionEvent());
         eventPool.Add(new WS_CaravanJourneyEvent());
@@ -133,6 +132,14 @@ public class WS_World : MonoBehaviour
             resources.Add(new WS_ResourceSource(ResourceType.SPICES));
             resources.Add(new WS_ResourceSource(ResourceType.TIN));
             resources.Add(new WS_ResourceSource(ResourceType.WOOD));
+
+        // War Events
+        eventPool.Add(new MoveCapitalEvent());
+        eventPool.Add(new EndWarEvent());
+        eventPool.Add(new ArmyRecruitmentEvent());
+        eventPool.Add(new BattleFoughtEvent());
+
+
 
         // TRAITS (order is not relevant)
 

@@ -42,7 +42,7 @@ public class WS_WorldGenerator
     public static int humiditySmoothing     = 1;        // 1 - 4        // The higher the value, the smoother the humidity will be
     public static int erosionSmoothing      = 1;        // 1 - 4        // The higher the value, the smoother the erosion will be
 
-    public static float shallowRestriction  = 0.6f;     // 0.4 - 0.7    // The higher the value, the more fractured and small landmasses will be
+    public static float shallowRestriction  = 0.5f;     // 0.4 - 0.7    // The higher the value, the more fractured and small landmasses will be
     public static float alpineRestriction   = 0.3f;     // 0.4 - 0.7    // The higher the value, the smaller mountain ranges will be
 
 
@@ -126,6 +126,15 @@ public class WS_WorldGenerator
 
                     tile.farmers = Mathf.CeilToInt(tile.population / 1000.0f);
 
+                    if (tile.government != null)
+                    {
+                        if (tile == tile.government.capital)
+                        {
+                            int soldiers = Mathf.CeilToInt(tile.farmers * 0.2f);
+                            tile.farmers -= soldiers;
+                            tile.soldiers += soldiers;
+                        }
+                    }
                 }
         }
 
@@ -198,7 +207,7 @@ public class WS_WorldGenerator
                                 nearestCulture = culture;
                             }
 
-                            distance = tile.DistanceTo(culture.capital);
+                            distance = tile.DistanceTo(culture.capital) + Mathf.FloorToInt(Random.Range(0.0f, 1.4f));
 
                             if (distance < minGovDist)
                             {

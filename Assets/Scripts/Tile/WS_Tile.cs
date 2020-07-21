@@ -29,6 +29,7 @@ public class WS_Tile
     public int farmers          = 0;
     public int builders         = 0;
     public int traders          = 0;
+    public int soldiers         = 0;
     public float foodUnits      = 0.0f;
     public float foodEfficiency = 1.2f;
     public float sanitation     = 30;
@@ -37,6 +38,7 @@ public class WS_Tile
     public float decadenceGain  = 0.005f;
     public float lastPopGrowth  = 0.0f;
     public float storedFood     = 0.0f;
+    public float happiness      = 50.0f;
 
     // Culture Data
     public WS_Culture culture   = null;

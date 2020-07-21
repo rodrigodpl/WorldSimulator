@@ -83,9 +83,11 @@ public class PopulationGrowthEvent : WS_BaseEvent
         // New Citizen 
         for (int i = 0; i < Mathf.CeilToInt(tile.population / 1000.0f) - lastPop; i++)
         {
-            if(Random.Range(0.0f, 1.0f) < 0.2f)
+            if (Random.Range(0.0f, 1.0f) < 0.15f)
+                tile.soldiers++;
+            else if (Random.Range(0.0f, 1.0f) < 0.15f)
                 tile.builders++;
-            else if (Random.Range(0.0f, 1.0f) < 0.2f)
+            else if (Random.Range(0.0f, 1.0f) < 0.15f)
                 tile.traders++;
             else
                 tile.farmers++;
@@ -94,6 +96,8 @@ public class PopulationGrowthEvent : WS_BaseEvent
         // Lost Citizen
         for (int i = 0; i < lastPop - Mathf.CeilToInt(tile.population / 1000.0f); i++)
         {
+            if (tile.soldiers > 0)
+                tile.soldiers--;
             if (tile.traders > 0)
                 tile.traders--;
             else if (tile.builders > 0)

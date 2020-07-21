@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum TreatyType {  WAR, TRADE_EMBARGO, PEACE, TRADE_AGREEMENT, ALLIANCE }
+public enum TreatyType {  WAR, TRADE_EMBARGO, PEACE, TRADE_AGREEMENT, ALLIANCE, TRUCE }
 
 public class WS_Treaty
 { 

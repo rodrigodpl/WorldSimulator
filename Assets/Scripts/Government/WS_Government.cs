@@ -7,6 +7,8 @@ public enum PowerHolder        { NONE, PEOPLE, CHURCH, NOBILITY, RULER}
 public enum Centralization     { NONE, CENTRALIZED, HIERARCHICAL, DISTRIBUTED, LOCAL}
 public enum Authoritarianism   { NONE, NATIONALIST, REPRESSIVE, TOLERANT, OPEN }
 
+public enum WarStage { PEACE, GATHERING, BATTLING}
+
 public class WS_Government 
 {
     public WS_Culture rulingCulture = null;
@@ -29,6 +31,15 @@ public class WS_Government
     public List<float> borderingOpinions = new List<float>();
 
     public List<WS_Treaty> treaties = new List<WS_Treaty>();
+
+
+    public int soldierPool = 0;
+    public float cohesion = 1.0f;
+    public float warScore = 50.0f;
+    public float armyProfessionalism = 1.0f;
+    public float commandPower = 0.05f;
+    public int warNum = 0;
+    public bool battleFought = false;
 
     public WS_Government(WS_Tile tile)
     {
