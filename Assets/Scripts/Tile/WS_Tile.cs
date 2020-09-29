@@ -26,13 +26,14 @@ public class WS_Tile
 
     // Population Data
     public float population     = 0.0f;
+    public int baseCitizens     = 2;
     public int farmers          = 0;
     public int builders         = 0;
     public int traders          = 0;
     public int soldiers         = 0;
     public int scholars         = 0;
     public float foodUnits      = 0.0f;
-    public float foodEfficiency = 1.1f;
+    public float foodEfficiency = 1.2f;
     public float sanitation     = 30;
     public float healthcare     = -0.2f;
     public float lastPopGrowth  = 0.0f;
@@ -74,12 +75,20 @@ public class WS_Tile
     public WS_CommerceCaravan caravan = null;
     public float qualityBonus = 1.0f;
     public float exploitationBonus = 1.0f;
+    public float tradingbonus = 1.0f;
+
+    public float resFoodBonus = 0.8f;
+    public float resWarBonus = 0.8f;
+    public float resConstructionBonus = 0.8f;
+    public float resUnrestBonus = 0.8f;
+    public float resProsperityBonus = 0.8f;
 
     // Tech Data
     public WS_Tech currentTech = null;
     public float storedTechPoints = 0.0f;
     public List<WS_Tech> availableTech = new List<WS_Tech>();
     public List<WS_Tech> researchedTech = new List<WS_Tech>();
+    public float techBonus = 1.0f;
 
     public List<WS_Tile> Neighbors(int radius = 1)     // Returns, or loads if unloaded, the tile's neigbors in (radius)
     {
@@ -136,7 +145,7 @@ public class WS_Tile
         population = 0.0f;
         farmers = builders = traders = soldiers = scholars = 0;
         foodUnits = 0.0f;
-        foodEfficiency = 1.1f;
+        foodEfficiency = 1.2f;
         sanitation = 30;
         healthcare = -0.2f;
         unrestDecay = 0.8f;
@@ -173,7 +182,7 @@ public class WS_Tile
         qualityBonus = 1.0f;
         exploitationBonus = 1.0f;
 
-        armyBonus = 1.0f;
+        armyBonus = 0.5f;
         defenseBonus = 1.0f;
 
         currentTech = null;

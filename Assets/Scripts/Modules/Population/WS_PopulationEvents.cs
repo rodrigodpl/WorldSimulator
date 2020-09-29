@@ -21,19 +21,19 @@ public class PopulationGrowthEvent : WS_BaseEvent
 
         float springValue = Random.Range(0.5f, 1.5f) * habitability;
 
-        if (springValue < 60.0f)        habitabilityBonus -= 0.3f;
-        else if (springValue < 80.0f)   habitabilityBonus -= 0.15f;
-        else if (springValue < 120.0f)  habitabilityBonus += 0.15f;
+        if (springValue < 60.0f)        habitabilityBonus -= 0.2f;
+        else if (springValue < 80.0f)   habitabilityBonus -= 0.1f;
+        else if (springValue < 120.0f)  habitabilityBonus += 0.2f;
         else                            habitabilityBonus += 0.3f;
 
         // Winter
 
         float winterValue = Random.Range(0.5f, 1.5f) * habitability;
 
-        if (winterValue < 60.0f)        habitabilityBonus -= 0.3f;
-        else if (winterValue < 80.0f)   habitabilityBonus -= 0.15f;
-        else if (winterValue < 120.0f)  habitabilityBonus += 0.15f;
-        else                            habitabilityBonus += 0.3f;
+        if (winterValue < 60.0f)        habitabilityBonus -= 0.2f;
+        else if (winterValue < 80.0f)   habitabilityBonus -= 0.1f;
+        else if (winterValue < 120.0f)  habitabilityBonus += 0.1f;
+        else                            habitabilityBonus += 0.2f;
 
         // Healthcare
 
@@ -54,12 +54,12 @@ public class PopulationGrowthEvent : WS_BaseEvent
         neighborBonus /= 6;
 
         // Prosperity bonus
-        float prosperityBonus = (1.0f + (1.0f + (tile.prosperity / tile.population) / 2.0f) / 2.0f);
-
+        float prosperityBonus = Mathf.Sqrt(Mathf.Sqrt(tile.prosperity / tile.population));
+        prosperityBonus = (prosperityBonus + tile.resFoodBonus) / 2.0f;
 
         // Growth
 
-        tile.foodUnits = tile.farmers * tile.foodEfficiency * tile.culture.FoodEfficiency * habitabilityBonus * healthcareBonus * prosperityBonus;
+        tile.foodUnits = (tile.farmers + tile.baseCitizens) * tile.foodEfficiency * tile.culture.FoodEfficiency * habitabilityBonus * healthcareBonus * prosperityBonus;
         tile.foodUnits += neighborBonus;
         tile.foodUnits *= 1000.0f;
 
@@ -88,10 +88,10 @@ public class PopulationGrowthEvent : WS_BaseEvent
         {
             float selector = Random.Range(0.0f, 1.0f);
 
-            if (selector < 0.2f)        tile.soldiers++;
-            else if (selector < 0.3f)   tile.builders++;
-            else if (selector < 0.4f)   tile.traders++;
-            else if (selector < 0.5f)   tile.scholars++;
+            if (selector < 0.15f)       tile.soldiers++;
+            else if (selector < 0.30f)  tile.builders++;
+            else if (selector < 0.45f)  tile.traders++;
+            else if (selector < 0.55f)  tile.scholars++;
             else                        tile.farmers++;
         }
 

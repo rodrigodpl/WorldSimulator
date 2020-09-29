@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public enum TraitGroup { EXPANSION, FOOD_EFFICIENCY, HEALTHCARE, SURVIVALISM, INFLUENCE, SYNCRETISM, 
-                         RELIGION_POWER, RELIGION_CORRUPTION, MAX_GROUPS }
+                         RELIGION_POWER, RELIGION_CORRUPTION, POWER_DISTRIBUTION, POWER_HOLDER, CENTRALIZATION, 
+                         AUTHORITARIANISM, MAX_GROUPS }
 
 public class WS_Trait
 {

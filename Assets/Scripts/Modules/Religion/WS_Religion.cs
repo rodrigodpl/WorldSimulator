@@ -8,8 +8,13 @@ public class WS_Religion : WS_Entity
     public static int MIN_TRAITS_RELIGION = 4;
 
     public int collapsed = 0;
+    public bool merged = false;
 
-    public float corruption = 0.0f;
+    public float influenceBonus = 5.0f;
+    public float influenceMul = 1.0f;
+    public float syncretism = 5.0f;
+
+    public float corruption = 1.0f;
     public float power = 1.0f;
 
     public WS_Religion(WS_Tile tile) { Init(tile, EntityType.RELIGION); }

@@ -11,6 +11,7 @@ public class WS_World : MonoBehaviour
     private List<WS_BaseEvent> eventPool                    = new List<WS_BaseEvent>();
     public static List<WS_Trait> cultureTraits              = new List<WS_Trait>();
     public static List<WS_Trait> religionTraits             = new List<WS_Trait>();
+    public static List<WS_Trait> governmentTraits           = new List<WS_Trait>();
     public static List<WS_Disaster> disasters               = new List<WS_Disaster>();
     public static List<WS_Infrastructure> infrastructure    = new List<WS_Infrastructure>();
     public static List<WS_ResourceSource> resources         = new List<WS_ResourceSource>();
@@ -76,6 +77,8 @@ public class WS_World : MonoBehaviour
             disasters.Add(new WS_FloodDisaster());
             disasters.Add(new WS_TsunamiDisaster());
             disasters.Add(new WS_PlagueDisaster());
+            disasters.Add(new WS_FireDisaster());
+            disasters.Add(new WS_EarthQuakeDisaster());
 
 
         // Religion Events
@@ -96,6 +99,8 @@ public class WS_World : MonoBehaviour
             infrastructure.Add(new WS_CultureInfrastructure());
             infrastructure.Add(new WS_ReligionInfrastructure());
             infrastructure.Add(new WS_ConstructionInfrastructure());
+            infrastructure.Add(new WS_CommerceInfrastructure());
+            infrastructure.Add(new WS_TechnologyInfrastructure());
 
 
         // Government Events
@@ -107,6 +112,7 @@ public class WS_World : MonoBehaviour
         eventPool.Add(new OpinionsEvent());
         eventPool.Add(new TreatyProposalEvent());
         eventPool.Add(new TreatyEndedEvent());
+        eventPool.Add(new JoinWarEvent());
 
         // Commerce Events
         eventPool.Add(new WS_ResourceConsumptionEvent());
@@ -176,15 +182,15 @@ public class WS_World : MonoBehaviour
         cultureTraits.Add(new HighMortalityTrait());
         cultureTraits.Add(new DecayingHealthTrait());
 
-        cultureTraits.Add(new InfluentialTrait());
-        cultureTraits.Add(new OutwardnessTrait());
-        cultureTraits.Add(new InwardnessTrait());
-        cultureTraits.Add(new IsolationistsTrait());
+        cultureTraits.Add(new InfluentialCulTrait());
+        cultureTraits.Add(new OutwardnessCulTrait());
+        cultureTraits.Add(new InwardnessCulTrait());
+        cultureTraits.Add(new IsolationistsCulTrait());
 
-        cultureTraits.Add(new SyncreticTrait());
-        cultureTraits.Add(new TolerantTrait());
-        cultureTraits.Add(new IntolerantTrait());
-        cultureTraits.Add(new RepressiveTrait());
+        cultureTraits.Add(new SyncreticCulTrait());
+        cultureTraits.Add(new TolerantCulTrait());
+        cultureTraits.Add(new IntolerantCulTrait());
+        cultureTraits.Add(new RepressiveCulTrait());
 
         // Religion Traits
         religionTraits.Add(new GoverningChurchTrait());
@@ -197,17 +203,38 @@ public class WS_World : MonoBehaviour
         religionTraits.Add(new AltruistsTrait());
         religionTraits.Add(new AsceticsTrait());
 
-        religionTraits.Add(new InfluentialTrait());
-        religionTraits.Add(new OutwardnessTrait());
-        religionTraits.Add(new InwardnessTrait());
-        religionTraits.Add(new IsolationistsTrait());
+        religionTraits.Add(new InfluentialRelTrait());
+        religionTraits.Add(new OutwardnessRelTrait());
+        religionTraits.Add(new InwardnessRelTrait());
+        religionTraits.Add(new IsolationistsRelTrait());
 
-        religionTraits.Add(new SyncreticTrait());
-        religionTraits.Add(new TolerantTrait());
-        religionTraits.Add(new IntolerantTrait());
-        religionTraits.Add(new RepressiveTrait());
+        religionTraits.Add(new SyncreticRelTrait());
+        religionTraits.Add(new TolerantRelTrait());
+        religionTraits.Add(new IntolerantRelTrait());
+        religionTraits.Add(new RepressiveRelTrait());
 
+        // Government Traits
+        governmentTraits.Add(new AutocracyTrait());
+        governmentTraits.Add(new OligarchyTrait());
+        governmentTraits.Add(new RulingCouncilTrait());
+        governmentTraits.Add(new DemocracyTrait());
 
+        governmentTraits.Add(new RulerHolderTrait());
+        governmentTraits.Add(new NobilityHolderTrait());
+        governmentTraits.Add(new ChurchHolderTrait());
+        governmentTraits.Add(new PeopleHolderTrait());
+
+        governmentTraits.Add(new CentralizedTrait());
+        governmentTraits.Add(new HierarchichalTrait());
+        governmentTraits.Add(new DistributedTrait());
+        governmentTraits.Add(new LocalControlTrait());
+
+        governmentTraits.Add(new NationalistTrait());
+        governmentTraits.Add(new RepressiveTrait());
+        governmentTraits.Add(new TolerantTrait());
+        governmentTraits.Add(new OpenViewsTrait());
+
+        WS_WordCreator.Init();
         InitWorld();
     }
 

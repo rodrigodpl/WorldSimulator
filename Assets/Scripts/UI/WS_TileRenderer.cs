@@ -108,9 +108,9 @@ public class WS_TileRenderer
                         if (tile.government != null)
                         {
                             if (tile == tile.government.capital)
-                                renderColor = tile.government.nationColor - (Color.white * 0.1f);
+                                renderColor = tile.government.color - (Color.white * 0.1f);
                             else
-                                renderColor = tile.government.nationColor;
+                                renderColor = tile.government.color;
                         }
                         else
                             renderColor = Color.white;
@@ -152,10 +152,12 @@ public class WS_TileRenderer
                 {
                     switch (tile.disaster.Type())
                     {
-                        case DisasterType.DROUGHT: renderColor = Color.yellow; break;
-                        case DisasterType.FLOOD: renderColor = Color.cyan; break;
-                        case DisasterType.TSUNAMI: renderColor = Color.red; break;
-                        case DisasterType.PLAGUE: renderColor = Color.gray; break;
+                        case DisasterType.DROUGHT:      renderColor = Color.yellow; break;
+                        case DisasterType.FLOOD:        renderColor = Color.cyan; break;
+                        case DisasterType.TSUNAMI:      renderColor = Color.green; break;
+                        case DisasterType.PLAGUE:       renderColor = Color.gray; break;
+                        case DisasterType.EARTHQUAKE:   renderColor = Color.magenta; break;
+                        case DisasterType.FIRE:         renderColor = Color.red; break;
                     }
                 }
                 else

@@ -10,15 +10,13 @@ public class UnrestEvent : WS_BaseEvent
 
     protected override void Success()
     {
-        tile.unrest += 1.0f / (tile.prosperity / tile.population);
-        tile.unrest *= tile.unrestDecay;
-
+        tile.unrest += Mathf.Min(1.0f / (tile.prosperity / tile.population), 10.0f);
 
         if (tile.culture != tile.government.rulingCulture)
             tile.unrestCultural += 2.5f;
 
         if (tile.religion != tile.government.rulingReligion)
-            tile.unrestReligious += 2.5f;
+            tile.unrestReligious += 2.5f * tile.religion.power;
 
         if (tile.culture != tile.government.rulingCulture && tile.religion != tile.government.rulingReligion)
         {
@@ -35,13 +33,13 @@ public class UnrestEvent : WS_BaseEvent
         if (tile.government.rebelsCultural == null)                                         tile.government.rebelsCultural = tile;
         else if (tile.government.rebelsCultural.unrestCultural < tile.unrestCultural)       tile.government.rebelsCultural = tile;
 
-        tile.unrest *= tile.unrestDecay;
-        tile.unrestCultural *= tile.unrestDecay;
-        tile.unrestReligious *= tile.unrestDecay;
+        tile.unrest *= Mathf.Max((tile.unrestDecay / tile.resUnrestBonus), 0.85f);
+        tile.unrestCultural *= Mathf.Max((tile.unrestDecay / tile.resUnrestBonus), 0.85f);
+        tile.unrestReligious *= Mathf.Max((tile.unrestDecay / tile.resUnrestBonus), 0.85f);
 
-        tile.government.unrest += tile.unrest * 0.3f;
-        tile.government.unrestCultural += tile.unrestDecay * 0.3f;
-        tile.government.unrestReligious += tile.unrestDecay * 0.3f;
+        tile.government.unrest += tile.unrest * tile.government.unrestMul;
+        tile.government.unrestCultural += tile.unrestDecay * tile.government.unrestMul;
+        tile.government.unrestReligious += tile.unrestDecay * tile.government.unrestMul;
     }
 
 }
@@ -77,7 +75,7 @@ public class UprisingEvent : WS_BaseEvent
 
         if (result == UprisingResult.DISCONTENT)
         { 
-            tile.government.repression = Mathf.Min(2.0f, tile.government.repression + 0.3f);
+            tile.government.repression = Mathf.Min(tile.government.baseRepression * 2.0f, tile.government.repression + 0.3f);
             tile.culture.syncretism -= 2.0f;
             tile.religion.syncretism -= 2.0f;
         }
@@ -85,9 +83,9 @@ public class UprisingEvent : WS_BaseEvent
         {
             switch (result)
             {
-                case UprisingResult.IMPROVED_RIGHTS:    tile.government.repression = Mathf.Max(0.5f, tile.government.repression - 0.1f);  break;
-                case UprisingResult.REFORM:             tile.government.repression = Mathf.Max(0.5f, tile.government.repression - 0.25f); break;
-                case UprisingResult.SCHISM:             tile.government.repression = Mathf.Max(0.5f, tile.government.repression - 0.5f);  break;
+                case UprisingResult.IMPROVED_RIGHTS:    tile.government.repression = Mathf.Max(tile.government.baseRepression * 0.5f, tile.government.repression - 0.1f);  break;
+                case UprisingResult.REFORM:             tile.government.repression = Mathf.Max(tile.government.baseRepression * 0.5f, tile.government.repression - 0.25f); break;
+                case UprisingResult.SCHISM:             tile.government.repression = Mathf.Max(tile.government.baseRepression * 0.5f, tile.government.repression - 0.5f);  break;
             }
 
             if (tile.government.unrestReligious > tile.government.unrestCultural && tile.government.unrestReligious > tile.unrest)

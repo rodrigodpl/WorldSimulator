@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum InfrastructureType { SANITATION, FOOD, HEALTHCARE, UNREST, CULTURE, RELIGION, CONSTRUCTION, WAR, MAX}
+public enum InfrastructureType { SANITATION, FOOD, HEALTHCARE, UNREST, CULTURE, RELIGION, CONSTRUCTION, WAR, COMMERCE, TECHNOLOGY, MAX}
 
 public class WS_Infrastructure 
 {
@@ -134,12 +134,12 @@ public class WS_UnrestInfrastructure : WS_Infrastructure
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
     {
-        tile.unrestDecay += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.UNREST], 2) * 0.002f;
+        tile.unrestDecay -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.UNREST], 2) * 0.002f;
     }
 
     public override void Reverse(WS_Tile tile, int upgradeLevel)
     {
-        tile.unrest -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.UNREST], 2) * 0.002f;
+        tile.unrest += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.UNREST], 2) * 0.002f;
     }
 }
 
@@ -164,14 +164,44 @@ public class WS_WarInfrastructure : WS_Infrastructure
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
     {
-        tile.armyBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.01f;
+        tile.armyBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.05f;
     }
 
     public override void Reverse(WS_Tile tile, int upgradeLevel)
     {
-        tile.armyBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.01f;
+        tile.armyBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.05f;
     }
 }
+
+public class WS_CommerceInfrastructure : WS_Infrastructure
+{
+    public WS_CommerceInfrastructure()
+    {
+        name1_3 = "Trade Post";
+        name4_6 = "Commercial Routes";
+        name7_9 = "Town Market";
+        nameWonder = "Mercantile District";
+
+        type = InfrastructureType.COMMERCE;
+        baseCost = 12;
+    }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 1.0f / (tile.prosperity / tile.population);
+    }
+
+    public override void Apply(WS_Tile tile, int upgradeLevel)
+    {
+        tile.tradingbonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.COMMERCE], 2) * 0.01f;
+    }
+
+    public override void Reverse(WS_Tile tile, int upgradeLevel)
+    {
+        tile.tradingbonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.COMMERCE], 2) * 0.01f;
+    }
+}
+
 
 public class WS_CultureInfrastructure : WS_Infrastructure
 {
@@ -193,12 +223,41 @@ public class WS_CultureInfrastructure : WS_Infrastructure
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
     {
-        tile.cultureBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CULTURE], 2) * 0.1f;
+        tile.cultureBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CULTURE], 2) * 0.05f;
     }
 
     public override void Reverse(WS_Tile tile, int upgradeLevel)
     {
-        tile.cultureBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CULTURE], 2) * 0.1f;
+        tile.cultureBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CULTURE], 2) * 0.05f;
+    }
+}
+
+public class WS_TechnologyInfrastructure : WS_Infrastructure
+{
+    public WS_TechnologyInfrastructure()
+    {
+        name1_3 = "Church School";
+        name4_6 = "Scholarly Circles";
+        name7_9 = "Guild Formation";
+        nameWonder = "University";
+
+        type = InfrastructureType.TECHNOLOGY;
+        baseCost = 12;
+    }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return tile.availableTech.Count / (tile.researchedTech.Count + 3.0f);
+    }
+
+    public override void Apply(WS_Tile tile, int upgradeLevel)
+    {
+        tile.techBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.TECHNOLOGY], 2) * 0.025f;
+    }
+
+    public override void Reverse(WS_Tile tile, int upgradeLevel)
+    {
+        tile.techBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.TECHNOLOGY], 2) * 0.025f;
     }
 }
 
@@ -223,12 +282,12 @@ public class WS_ReligionInfrastructure : WS_Infrastructure
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
     {
-        tile.religionBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.RELIGION], 2) * 0.1f;
+        tile.religionBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.RELIGION], 2) * 0.05f;
     }
 
     public override void Reverse(WS_Tile tile, int upgradeLevel)
     {
-        tile.religionBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.RELIGION], 2) * 0.1f;
+        tile.religionBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.RELIGION], 2) * 0.05f;
     }
 }
 

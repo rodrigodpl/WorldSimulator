@@ -661,7 +661,7 @@ public class WS_TechReligionI : WS_Tech
 
     public override void Apply(WS_Tile tile)
     {
-        tile.religionBonus += 0.5f;
+        tile.religionBonus += 0.3f;
     }
 }
 

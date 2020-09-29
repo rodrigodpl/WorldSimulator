@@ -22,14 +22,14 @@ public class ArmyRecruitmentEvent : WS_BaseEvent
         {
             newTroops = tile.soldiers;
             tile.soldiers -= newTroops;
-            professionalism = tile.armyBonus;
+            professionalism = tile.government.baseProfessionalism + ((tile.armyBonus + tile.resWarBonus) / 2.0f);
 
         }
         else if (tile.unrest < 30.0f && Random.Range(0.0f, 100.0f) > tile.unrest && tile.government.warScore < 30.0f)
         {
             newTroops = Mathf.CeilToInt(0.05f * (tile.population / 1000.0f));
             tile.unrest += 10.0f;
-            professionalism = 0.7f;
+            professionalism = (tile.government.baseProfessionalism + tile.resWarBonus) / 2.0f;
         }
 
         if (newTroops > 0)
@@ -103,7 +103,7 @@ public class BattleFoughtEvent : WS_BaseEvent
                     if (target == target.government.capital || target == tile.government.capital)
                         warScore += 10.0f;
                     else
-                        warScore += 3.0f;
+                        warScore += 7.0f;
 
                     tile.government.warScore += warScore;
                     target.government.warScore -= warScore;
@@ -125,8 +125,8 @@ public class BattleFoughtEvent : WS_BaseEvent
 
         float professionalismRatio = tile.government.armyProfessionalism / target.government.armyProfessionalism;
 
-        float atkPower = atkSoldiers * professionalismRatio * Random.Range(0.3f, 1.0f);
-        float defPower = Random.Range(0.0f, defSoldiers) * tile.defenseBonus;
+        float atkPower = atkSoldiers * professionalismRatio * Random.Range(0.5f, 1.0f);
+        float defPower = defSoldiers * tile.defenseBonus * Random.Range(0.5f, 1.0f); ;
 
         powerRatio = atkPower / defPower;
 
@@ -138,13 +138,16 @@ public class BattleFoughtEvent : WS_BaseEvent
         int enemyCasualties = Mathf.CeilToInt(((-defSoldiers / powerRatio) + defSoldiers) * 0.5f);
         int alliedCasualties = Mathf.FloorToInt(enemyCasualties * (1.0f/ powerRatio));
 
-        float warScore = (enemyCasualties * 80.0f / target.government.soldierPool);
+        alliedCasualties = (int)(alliedCasualties / (1.0f + tile.healthcare));
+        enemyCasualties = (int)(enemyCasualties / (1.0f + target.healthcare));
+
+        float warScore = (enemyCasualties * 10.0f / target.government.soldierPool);
 
         tile.government.soldierPool = Mathf.Max(0, tile.government.soldierPool - alliedCasualties);
         target.government.soldierPool = Mathf.Max(0, target.government.soldierPool - enemyCasualties);
 
         if (target == target.government.capital || target == tile.government.capital)
-            warScore += 12.0f;
+            warScore += 10.0f;
         else
             warScore += 5.0f;
 
@@ -163,15 +166,13 @@ public class BattleFoughtEvent : WS_BaseEvent
         int alliedCasualties = Mathf.CeilToInt((atkSoldiers * (1.0f - powerRatio)) * 0.5f);
         int enemyCasualties = Mathf.FloorToInt(powerRatio * alliedCasualties);
 
-        float warScore = (alliedCasualties * 100.0f / tile.government.soldierPool);
+        alliedCasualties = (int)(alliedCasualties / (1.0f + tile.healthcare));
+        enemyCasualties = (int)(enemyCasualties / (1.0f + target.healthcare));
+
+        float warScore = (alliedCasualties * 20.0f / tile.government.soldierPool) ;
 
         tile.government.soldierPool = Mathf.Max(0, tile.government.soldierPool - alliedCasualties);
         target.government.soldierPool = Mathf.Max(0, target.government.soldierPool - enemyCasualties);
-
-        if (target == target.government.capital || target == tile.government.capital)
-            warScore += 12.0f;
-        else
-            warScore += 5.0f;
 
         tile.government.armyProfessionalism -= 0.1f;
 

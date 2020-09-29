@@ -111,7 +111,7 @@ public class WS_WorldGenerator
                                 tile.availableTech.Add(tech);
                     }
 
-                    if (Random.Range(0.0f, 1.0f) < tile.population / 1000000)
+                    if (Random.Range(0.0f, 1.0f) < tile.population / 700000)
                     {
                         tile.culture = new WS_Culture(tile);
                         tile.government = new WS_Government(tile);

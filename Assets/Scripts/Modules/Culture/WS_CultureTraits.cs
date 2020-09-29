@@ -172,3 +172,112 @@ public class DecayingHealthTrait : WS_Trait
 }
 
 
+//  CULTURE - Influence
+public class InfluentialCulTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.INFLUENCE; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).influenceBonus += 2.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).influenceBonus -= 2.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 0.1f;
+    }
+}
+
+public class OutwardnessCulTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.INFLUENCE; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).influenceBonus += 1.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).influenceBonus -= 1.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 0.2f;
+    }
+}
+
+public class InwardnessCulTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.INFLUENCE; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).influenceBonus -= 1.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).influenceBonus += 1.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 0.2f;
+    }
+}
+
+public class IsolationistsCulTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.INFLUENCE; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).influenceBonus -= 2.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).influenceBonus += 2.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 0.1f;
+    }
+}
+
+
+//  CULTURE - Influence
+public class SyncreticCulTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.SYNCRETISM; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).syncretism += 2.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).syncretism -= 2.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 0.1f;
+    }
+}
+
+public class TolerantCulTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.SYNCRETISM; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).syncretism += 1.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).syncretism -= 1.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 0.2f;
+    }
+}
+
+public class IntolerantCulTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.SYNCRETISM; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).syncretism -= 1.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).syncretism += 1.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 0.2f;
+    }
+}
+
+public class RepressiveCulTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.SYNCRETISM; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).syncretism -= 2.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).syncretism += 2.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return 0.1f;
+    }
+}
+
+
+

@@ -2,20 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum EntityType { NONE, CULTURE, RELIGION }
+public enum EntityType { NONE, CULTURE, RELIGION, GOVERNMENT }
 
 public class WS_Entity
 {
     public EntityType type = EntityType.NONE;
 
-    public bool merged = false;
-
     float minTraits = 0.0f;
     float maxTraits = 0.0f;
-
-    public float influenceBonus = 5.0f;
-    public float influenceMul = 1.0f;
-    public float syncretism = 5.0f;
 
     public Color color = Color.white;
 
@@ -39,24 +33,28 @@ public class WS_Entity
                 minTraits = WS_Religion.MIN_TRAITS_RELIGION;
                 maxTraits = WS_Religion.MAX_TRAITS_RELIGION;
                 break;
+            case EntityType.GOVERNMENT:
+                minTraits = WS_Government.MIN_TRAITS_GOVERNMENT;
+                maxTraits = WS_Government.MAX_TRAITS_GOVERNMENT;
+                break;
         }
 
-        float selector = Random.Range(minTraits - traits.Count, maxTraits - traits.Count);
+        float selector = 1.0f;
 
         while (selector > 0.0f)
         {
             addRandomTrait(tile);
-            selector = Random.Range(minTraits - traits.Count, maxTraits - traits.Count);
+            selector = Random.Range(minTraits - traits.Count - 0.99f, maxTraits - traits.Count - 0.1f);
         }
 
         capital = tile;
-        color = new Color(Random.Range(0.1f, 0.35f), Random.Range(0.1f, 0.35f), Random.Range(0.1f, 0.35f)); // dark tones
+        color = new Color(Random.Range(0.1f, 0.9f), Random.Range(0.1f, 0.9f), Random.Range(0.1f, 0.9f)); // dark tones
     }
 
 
-    public void Init(WS_Entity base_culture, WS_Tile tile)  
+    public void Init(WS_Entity base_entity, WS_Tile tile)  
     {
-        type = base_culture.type;
+        type = base_entity.type;
 
         switch (type)
         {
@@ -70,37 +68,34 @@ public class WS_Entity
                 break;
         }
 
-        float selector = Random.Range(minTraits - traits.Count, maxTraits - traits.Count);
 
-        foreach (WS_Trait trait in base_culture.traits)
+        foreach (WS_Trait trait in base_entity.traits)
         {
             trait.Apply(this);
             traits.Add(trait);
         }
 
-        while (selector > 0.0f)
-        {
-            addRandomTrait(base_culture.capital);
-            selector = Random.Range(minTraits - traits.Count, maxTraits - traits.Count);
-        }
+        int changeNum = Mathf.CeilToInt(Random.Range(0.25f * base_entity.traits.Count, 0.5f * base_entity.traits.Count));
 
-        selector = Random.Range(traits.Count - maxTraits, traits.Count - minTraits);
-
-        while (selector < 0.0f)
+        while (changeNum > 0)
         {
-            removeRandomTrait(base_culture.capital);
-            selector = Random.Range(traits.Count - maxTraits, traits.Count - minTraits);
+            addRandomTrait(base_entity.capital);
+            changeNum--;
         }
 
         capital = tile;
-        color = new Color(Random.Range(0.55f, 0.9f), Random.Range(0.55f, 0.9f), Random.Range(0.55f, 0.9f));
+        float r = base_entity.color.r; float g = base_entity.color.g; float b = base_entity.color.b;
+
+        color = base_entity.color + new Color(Random.Range(-r + 0.1f, 0.9f-r), Random.Range(-g + 0.1f, 0.9f - g), Random.Range(-b + 0.1f, 0.9f - b));
     }
 
 
     public void Init(WS_Entity base_entity_A, WS_Entity base_entity_B, WS_Tile tile)  
     {
-        merged = true;
         type = base_entity_A.type;
+
+        if (type == EntityType.CULTURE) ((WS_Culture)this).merged = true;
+        if (type == EntityType.RELIGION) ((WS_Religion)this).merged = true;
 
         minTraits = Mathf.Max(base_entity_A.minTraits, base_entity_B.minTraits);
         maxTraits = Mathf.Max(base_entity_A.maxTraits, base_entity_B.maxTraits);
@@ -187,6 +182,7 @@ public class WS_Entity
         {
             case EntityType.CULTURE: availableTraits = WS_World.cultureTraits; break;
             case EntityType.RELIGION: availableTraits = WS_World.religionTraits; break;
+            case EntityType.GOVERNMENT: availableTraits = WS_World.governmentTraits; break;
         }
 
         foreach (WS_Trait trait in availableTraits)

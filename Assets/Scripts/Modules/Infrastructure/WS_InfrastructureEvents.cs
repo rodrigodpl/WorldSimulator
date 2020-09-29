@@ -61,9 +61,9 @@ public class InfrastructureProductionEvent : WS_BaseEvent
     {
         float newPoints = 0.0f;
 
-        newPoints += Random.Range(0.8f, 1.2f) * tile.builders;
+        newPoints += Random.Range(0.8f, 1.2f) * (tile.builders + tile.baseCitizens);
 
-        newPoints *=  1.0f + tile.constructionBonus;
+        newPoints *= ((1.0f + tile.constructionBonus) + tile.resConstructionBonus) / 2.0f;
 
         tile.infrastructurePoints += newPoints;
 

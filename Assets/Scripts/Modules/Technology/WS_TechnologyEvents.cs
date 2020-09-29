@@ -45,7 +45,7 @@ public class WS_TechResearch : WS_BaseEvent
 
     protected override bool SuccessCheck()
     {
-        return tile.scholars + tile.storedTechPoints > Random.Range(0.8f * tile.currentTech.cost, 1.2f * tile.currentTech.cost);
+        return ((tile.scholars + tile.baseCitizens) * tile.techBonus) + tile.storedTechPoints > Random.Range(0.8f * tile.currentTech.cost, 1.2f * tile.currentTech.cost);
     }
 
 
@@ -85,7 +85,7 @@ public class WS_TechResearch : WS_BaseEvent
 
     protected override void Fail()
     {
-        tile.storedTechPoints += tile.scholars * 0.1f;
+        tile.storedTechPoints += (tile.scholars + tile.baseCitizens);
     }
 }
 
