@@ -4,16 +4,14 @@ using UnityEngine;
 
 public class WS_Culture : WS_Entity
 {
-    public static float MAX_TRAITS_CULTURE = 3.0f;
-    public static float MIN_TRAITS_CULTURE = 3.0f;
-    public static float MAX_TRAITS_TRIBAL = 3.0f;
-    public static float MIN_TRAITS_TRIBAL = 1.0f;
+    public static int MAX_TRAITS_CULTURE = 4;
+    public static int MIN_TRAITS_CULTURE = 2;
+
+    public int collapsed = 0;
 
     public float FoodEfficiency = 1.15f;  
-    public float survivalism = 0.0f;  
     public float expansionism = 0.0f;
     public float healthcare = 0.05f;
-    public float decadenceLoss = 5.0f;
 
     public WS_Culture(WS_Tile tile) { Init(tile, EntityType.CULTURE); }
 

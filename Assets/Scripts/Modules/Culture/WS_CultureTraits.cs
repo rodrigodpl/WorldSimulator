@@ -2,68 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//  POPULATION - Survivalism
-public class SurvivalistsTrait : WS_Trait
-{
-    public override TraitGroup Group() { return TraitGroup.SURVIVALISM; }
-
-    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).survivalism += 20.0f; }
-    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).survivalism -= 20.0f; }
-
-    public override float Chance(WS_Tile tile)
-    {
-        if (tile.habitability < 85.0f) return 0.3f;
-        else if (tile.habitability < 100.0f) return 0.1f;
-        else return 0.0f;
-    }
-}
-
-public class ResilientTrait : WS_Trait
-{
-    public override TraitGroup Group() { return TraitGroup.SURVIVALISM; }
-
-    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).survivalism += 10.0f; }
-    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).survivalism -= 10.0f; }
-
-    public override float Chance(WS_Tile tile)
-    {
-        if (tile.habitability < 85.0f) return 0.2f;
-        else if (tile.habitability < 100.0f) return 0.1f;
-        else return 0.0f;
-    }
-}
-
-public class UnadaptableTrait : WS_Trait
-{
-    public override TraitGroup Group() { return TraitGroup.SURVIVALISM; }
-
-    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).survivalism -= 10.0f; }
-    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).survivalism += 10.0f; }
-
-    public override float Chance(WS_Tile tile)
-    {
-        if (tile.habitability > 100.0f) return 0.1f;
-        else if (tile.habitability > 120.0f) return 0.2f;
-        else return 0.0f;
-    }
-}
-
-public class SybaritesTrait : WS_Trait
-{
-    public override TraitGroup Group() { return TraitGroup.SURVIVALISM; }
-
-    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).survivalism -= 20.0f; }
-    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).survivalism += 20.0f; }
-
-    public override float Chance(WS_Tile tile)
-    {
-        if (tile.habitability > 100.0f) return 0.1f;
-        else if (tile.habitability > 120.0f) return 0.3f;
-        else return 0.0f;
-    }
-}
-
-
 //  POPULATION - Food Efficiency
 public class MasterFarmersTrait : WS_Trait
 {
@@ -123,12 +61,14 @@ public class FarAndBeyondTrait : WS_Trait
 {
     public override TraitGroup Group() { return TraitGroup.EXPANSION; }
 
-    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).expansionism += 10.0f; }
-    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).expansionism -= 10.0f; }
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).expansionism += 20.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).expansionism -= 20.0f; }
 
     public override float Chance(WS_Tile tile)
     {
-        return 0.1f;
+        if (tile.habitability < 85.0f) return 0.3f;
+        else if (tile.habitability < 100.0f) return 0.1f;
+        else return 0.0f;
     }
 }
 
@@ -136,29 +76,18 @@ public class ExpansionistsTrait : WS_Trait
 {
     public override TraitGroup Group() { return TraitGroup.EXPANSION; }
 
-    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).expansionism += 5.0f; }
-    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).expansionism -= 5.0f; }
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).expansionism += 10.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).expansionism -= 10.0f; }
 
     public override float Chance(WS_Tile tile)
     {
-        return 0.2f;
+        if (tile.habitability < 85.0f) return 0.2f;
+        else if (tile.habitability < 100.0f) return 0.1f;
+        else return 0.0f;
     }
 }
 
 public class ShortHorizonsTrait : WS_Trait
-{
-    public override TraitGroup Group() { return TraitGroup.EXPANSION; }
-
-    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).expansionism -= 5.0f; }
-    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).expansionism += 5.0f; }
-
-    public override float Chance(WS_Tile tile)
-    {
-        return 0.2f;
-    }
-}
-
-public class NothingLiketHomeTrait : WS_Trait
 {
     public override TraitGroup Group() { return TraitGroup.EXPANSION; }
 
@@ -167,7 +96,24 @@ public class NothingLiketHomeTrait : WS_Trait
 
     public override float Chance(WS_Tile tile)
     {
-        return 0.1f;
+        if (tile.habitability > 100.0f) return 0.1f;
+        else if (tile.habitability > 120.0f) return 0.2f;
+        else return 0.0f;
+    }
+}
+
+public class NothingLiketHomeTrait : WS_Trait
+{
+    public override TraitGroup Group() { return TraitGroup.EXPANSION; }
+
+    public override void Apply(WS_Entity entity) { ((WS_Culture)entity).expansionism -= 20.0f; }
+    public override void Reverse(WS_Entity entity) { ((WS_Culture)entity).expansionism += 20.0f; }
+
+    public override float Chance(WS_Tile tile)
+    {
+        if (tile.habitability > 100.0f) return 0.1f;
+        else if (tile.habitability > 120.0f) return 0.3f;
+        else return 0.0f;
     }
 }
 

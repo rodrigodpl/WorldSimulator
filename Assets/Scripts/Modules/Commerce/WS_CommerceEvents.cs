@@ -19,16 +19,28 @@ public class WS_ResourceConsumptionEvent : WS_BaseEvent
 
     protected override void Success()
     {
-        foreach(WS_ResourceStack stack in tile.resStacks)
+        float prosperityMul = 1.001f;
+        foreach (WS_ResourceStack stack in tile.resStacks)
         {
             if (stack.type == tile.resource.type)
             {
                 stack.amount = (int)(tile.population / 10.0f);
                 stack.quality = tile.resource.quality;
             }
-            else
+            else if (stack.amount > 0)
+            {
                 stack.amount = Mathf.Max(0, stack.amount - (int)tile.population / 1000);
+            }
+            else
+            {
+                stack.quality = 0;
+                prosperityMul -= 0.003f / (int)ResourceType.MAX;
+            }
+        
         }
+
+        tile.prosperity = Mathf.Lerp(tile.prosperity, tile.population, 0.0001f);
+        tile.prosperity *= prosperityMul;
     }
 }
 
@@ -41,15 +53,15 @@ public class WS_CaravanJourneyEvent : WS_BaseEvent
     {
         WS_CommerceCaravan caravan = tile.caravan;
 
-        if(caravan == null)
+        if (caravan == null)
         {
             if (tile.traders > 0)
             {
                 WS_CommerceCaravan newCaravan = new WS_CommerceCaravan();
 
                 WS_ResourceStack resStack = new WS_ResourceStack(tile.resource.type);
-                resStack.quality = tile.resource.quality;
-                resStack.amount = (int)(100.0f * tile.traders * tile.resource.abundance);
+                resStack.quality = tile.resource.quality * tile.qualityBonus;
+                resStack.amount = (int)(50.0f * tile.traders * tile.resource.abundance * tile.exploitationBonus);
 
                 newCaravan.travelTime = tile.traders;
                 newCaravan.currentTile = tile;
@@ -69,9 +81,9 @@ public class WS_CaravanJourneyEvent : WS_BaseEvent
             foreach (WS_Tile neighbor in caravan.currentTile.Neighbors())
             {
                 int neighborAmount = neighbor.resStacks[(int)caravan.resStack.type].amount;
-                float expectedPrice = 1.0f - (neighborAmount / (neighbor.population / 10.0f)) * caravan.resStack.Price();  
+                float expectedPrice = (1.0f - (neighborAmount / (neighbor.population / 10.0f))) * caravan.resStack.Price();
 
-                if(expectedPrice > bestPrice)
+                if (expectedPrice > bestPrice)
                 {
                     bestPrice = expectedPrice;
                     dest = neighbor;
@@ -79,22 +91,39 @@ public class WS_CaravanJourneyEvent : WS_BaseEvent
             }
 
             caravan.currentTile = dest;
-            int unitsSold = caravan.resStack.amount / caravan.travelTime;
 
-            WS_ResourceStack destStack = caravan.currentTile.resStacks[(int)caravan.resStack.type];
+            if (bestPrice > 0)
+            {
+                int unitsSold = caravan.resStack.amount / caravan.travelTime;
 
-            destStack.quality = (caravan.resStack.quality * unitsSold + destStack.quality * destStack.amount) / (destStack.amount + unitsSold);
-            destStack.amount += unitsSold;
+                WS_ResourceStack destStack = caravan.currentTile.resStacks[(int)caravan.resStack.type];
 
-            caravan.money += unitsSold * (int)bestPrice;
+                destStack.quality = (caravan.resStack.quality * unitsSold + destStack.quality * destStack.amount) / (destStack.amount + unitsSold);
+                destStack.amount += unitsSold;
+
+                caravan.money += unitsSold * (int)bestPrice;
+                dest.prosperity += unitsSold * (int)bestPrice * 0.1f;
+
+                if(tile.culture != dest.culture)
+                {
+                    tile.culture.syncretism += 1.0f;
+                    dest.culture.syncretism += 1.0f;
+                }
+                if(tile.religion != dest.religion)
+                {
+                    tile.religion.syncretism += 1.0f;
+                    dest.religion.syncretism += 1.0f;
+                }
+            }
 
             caravan.currentTime++;
 
-            if(caravan.currentTime >= caravan.travelTime)
+            if (caravan.currentTime >= caravan.travelTime)
             {
                 tile.prosperity += caravan.money;
                 tile.caravan = null;
             }
+
         }
     }
 }

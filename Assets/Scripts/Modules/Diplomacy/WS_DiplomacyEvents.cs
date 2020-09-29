@@ -55,33 +55,45 @@ public class OpinionsEvent : WS_BaseEvent
         int index = 0;
         foreach (WS_Government gov in tile.government.borderingGovernments)
         {
-            int opinion = 0;
+            int opinion = 15;
 
-            if (gov.rulingCulture.tribal)
-                opinion -= 5;
+            if (gov.rulingCulture == tile.government.rulingCulture) opinion += 20;
+            else
+            {
+                opinion -= 20;
 
-            if (gov.rulingReligion.tribal)
-                opinion -= 5;
-
-            if (gov.rulingCulture == tile.government.rulingCulture)         opinion += 20;
-            else opinion -= 20;
+                foreach (WS_Trait trait in tile.culture.traits)
+                    foreach (WS_Trait neighborTrait in gov.rulingCulture.traits)
+                    {
+                        if (trait == neighborTrait)
+                            opinion += 5;
+                    }
+            }
 
             if (gov.rulingReligion == tile.government.rulingReligion)       opinion += 20;
-            else opinion -= 20;
+            else
+            {
+                opinion -= 20;
+
+                foreach (WS_Trait trait in tile.religion.traits)
+                    foreach (WS_Trait neighborTrait in gov.rulingCulture.traits)
+                    {
+                        if (trait == neighborTrait)
+                            opinion += 5;
+                    }
+            }
 
             if (gov.powerDistribution == tile.government.powerDistribution) opinion += 10;
-            else opinion -= 10;
+            else opinion -= 15;
 
             if (gov.powerHolder == tile.government.powerHolder)             opinion += 10;
-            else opinion -= 10;
+            else opinion -= 15;
 
             if (gov.centralization == tile.government.centralization)       opinion += 10;
-            else opinion -= 10;
+            else opinion -= 15;
 
             if (gov.authoritarianism == tile.government.authoritarianism)   opinion += 10;
-            else opinion -= 10;
-
-            opinion += (int)(tile.government.legitimacy / 50.0f);
+            else opinion -= 15;
 
             foreach (WS_Treaty treaty in tile.government.treaties)
             {
@@ -99,8 +111,9 @@ public class OpinionsEvent : WS_BaseEvent
                 }
             }
 
+            opinion += Random.Range(-20, 21);
+
             tile.government.borderingOpinions[index] = Mathf.Lerp(tile.government.borderingOpinions[index], opinion, 0.01f);
-            tile.government.borderingOpinions[index] += Random.Range(-5.0f, 5.0f);
             index++;
         }
     }

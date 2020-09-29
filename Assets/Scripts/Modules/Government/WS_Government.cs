@@ -14,8 +14,15 @@ public class WS_Government
     public WS_Culture rulingCulture = null;
     public WS_Religion rulingReligion = null;
      
-    public float legitimacy = 0.0f;
-     
+    public float unrest = 0.0f;
+    public float unrestCultural = 0.0f;
+    public float unrestReligious = 0.0f;
+    public float repression = 1.0f;
+
+    public WS_Tile rebels = null;
+    public WS_Tile rebelsCultural = null;
+    public WS_Tile rebelsReligious = null;
+
     public PowerDistribution powerDistribution = PowerDistribution.NONE;
     public PowerHolder powerHolder             = PowerHolder.NONE;
     public Centralization centralization       = Centralization.NONE;
@@ -25,6 +32,22 @@ public class WS_Government
      
     public Color nationColor = Color.white;
      
+    //TODO
+    //convert government into entity
+    //    transform government enums into traits (Authoritarianism repression, Centralization commandpower)
+    //    apply bonuses to tile when a given resource is held
+    //    treaties have effect
+    //    add effect into religious traits
+    //    add scholarship infrastructure (maybe defense?)
+    //    check disaster functionality
+    //    add word generator
+    //    add main menu
+    //    add world creation menu
+    //    add tile viewer
+    //    add entity viewer
+    //    add tech tree?
+    //    add war view?
+
     public WS_Tile capital = null;
 
     public List<WS_Government> borderingGovernments = new List<WS_Government>();
@@ -34,12 +57,13 @@ public class WS_Government
 
 
     public int soldierPool = 0;
-    public float cohesion = 1.0f;
-    public float warScore = 50.0f;
     public float armyProfessionalism = 1.0f;
-    public float commandPower = 0.05f;
+    public float warScore = 50.0f;
+    public float commandPower = 0.1f;
     public int warNum = 0;
     public bool battleFought = false;
+
+    public EventModule preferredTech = EventModule.POPULATION;
 
     public WS_Government(WS_Tile tile)
     {
@@ -106,4 +130,68 @@ public class WS_Government
                 break;
         }
     }
+
+
+    public void CreateSchism(WS_Tile origin, EventModule module)
+    {
+        List<WS_Tile> closedTiles = new List<WS_Tile>();
+        List<WS_Tile> openTiles = new List<WS_Tile>();
+
+        float unrestPower = 500.0f;
+
+        openTiles.Add(origin);
+
+        while(openTiles.Count > 0)
+        {
+            WS_Tile currentTile = openTiles[0];
+
+            foreach(WS_Tile neighbor in currentTile.Neighbors())
+            {
+                if (neighbor.population == 0.0f)
+                    continue;
+
+                if (neighbor.government != origin.government || origin.government.capital == neighbor)
+                    continue;
+
+                switch(module)
+                {
+                    case EventModule.POPULATION:
+                        if(unrestPower > 100.0f && !openTiles.Contains(neighbor) && !closedTiles.Contains(neighbor))
+                        {
+                            unrestPower -= (100.0f - currentTile.unrest);
+                            openTiles.Add(neighbor);
+                        }
+                        break;
+
+                    case EventModule.CULTURE:
+                        if (neighbor.culture == origin.culture && !openTiles.Contains(neighbor) && !closedTiles.Contains(neighbor))
+                            openTiles.Add(neighbor);
+                        break;
+
+                    case EventModule.RELIGION:
+                        if (neighbor.religion == origin.religion && !openTiles.Contains(neighbor) && !closedTiles.Contains(neighbor))
+                            openTiles.Add(neighbor);
+                        break;
+                }
+            }
+
+            closedTiles.Add(currentTile);
+            openTiles.RemoveAt(0);
+        }
+
+        if(closedTiles.Count > 4)
+        {
+            WS_Government newGov = new WS_Government(origin);
+            newGov.rulingCulture = origin.culture;
+            newGov.rulingReligion = origin.religion;
+            newGov.preferredTech = (EventModule)Mathf.FloorToInt(Random.Range(0, (int)EventModule.MAX - 1));
+
+            foreach (WS_Tile tile in closedTiles)
+            {
+                tile.government = newGov;
+                tile.unrest = tile.unrestCultural = tile.unrestReligious = 0.0f;
+            }
+        }
+    }
+
 }

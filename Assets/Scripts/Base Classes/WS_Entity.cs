@@ -8,15 +8,14 @@ public class WS_Entity
 {
     public EntityType type = EntityType.NONE;
 
-    public bool tribal = true;
     public bool merged = false;
 
     float minTraits = 0.0f;
     float maxTraits = 0.0f;
 
-    public float influenceBonus = -3.0f;
-    public float syncretism = 0.0f;
-    public float decadence = 0.0f;
+    public float influenceBonus = 5.0f;
+    public float influenceMul = 1.0f;
+    public float syncretism = 5.0f;
 
     public Color color = Color.white;
 
@@ -33,12 +32,12 @@ public class WS_Entity
         switch(type)
         {
             case EntityType.CULTURE:
-                minTraits = WS_Culture.MIN_TRAITS_TRIBAL;
-                maxTraits = WS_Culture.MAX_TRAITS_TRIBAL;
+                minTraits = WS_Culture.MIN_TRAITS_CULTURE;
+                maxTraits = WS_Culture.MAX_TRAITS_CULTURE;
                 break;
             case EntityType.RELIGION:
-                minTraits = WS_Religion.MIN_TRAITS_TRIBAL;
-                maxTraits = WS_Religion.MAX_TRAITS_TRIBAL;
+                minTraits = WS_Religion.MIN_TRAITS_RELIGION;
+                maxTraits = WS_Religion.MAX_TRAITS_RELIGION;
                 break;
         }
 
@@ -57,9 +56,7 @@ public class WS_Entity
 
     public void Init(WS_Entity base_culture, WS_Tile tile)  
     {
-        tribal = false; 
         type = base_culture.type;
-        influenceBonus = 0.0f;
 
         switch (type)
         {
@@ -102,10 +99,8 @@ public class WS_Entity
 
     public void Init(WS_Entity base_entity_A, WS_Entity base_entity_B, WS_Tile tile)  
     {
-        tribal = false;
         merged = true;
         type = base_entity_A.type;
-        influenceBonus = 0.0f;
 
         minTraits = Mathf.Max(base_entity_A.minTraits, base_entity_B.minTraits);
         maxTraits = Mathf.Max(base_entity_A.maxTraits, base_entity_B.maxTraits);

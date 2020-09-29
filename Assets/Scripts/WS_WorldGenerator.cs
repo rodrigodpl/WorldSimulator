@@ -105,6 +105,10 @@ public class WS_WorldGenerator
                     if (!tile.seaBody && tile.habitability >= minHabitability && tile.population == 0.0f)
                     {
                         tile.population += tile.habitability * 50.0f * Random.Range(0.5f, 2.5f);
+
+                        foreach (WS_Tech tech in WS_World.techs)
+                            if (tech.requirements.Count == 0)
+                                tile.availableTech.Add(tech);
                     }
 
                     if (Random.Range(0.0f, 1.0f) < tile.population / 1000000)
@@ -112,12 +116,13 @@ public class WS_WorldGenerator
                         tile.culture = new WS_Culture(tile);
                         tile.government = new WS_Government(tile);
                         tile.government.rulingCulture = tile.culture;
+                        tile.government.preferredTech = (EventModule)Mathf.FloorToInt(Random.Range(0, (int)EventModule.MAX - 1));
                         governments.Add(tile.government);
                         cultures.Add(tile.culture);
                         tile.population *= 1.5f;
                     }
 
-                    if (Random.Range(0.0f, 1.0f) < tile.population / 3000000)
+                    if (Random.Range(0.0f, 1.0f) < tile.population / 2000000)
                     {
                         tile.religion = new WS_Religion(tile);
                         religions.Add(tile.religion);
@@ -125,62 +130,17 @@ public class WS_WorldGenerator
                     }
 
                     tile.farmers = Mathf.CeilToInt(tile.population / 1000.0f);
+                    tile.prosperity = tile.population * 0.5f;
 
                     if (tile.government != null)
                     {
-                        if (tile == tile.government.capital)
-                        {
-                            int soldiers = Mathf.CeilToInt(tile.farmers * 0.2f);
-                            tile.farmers -= soldiers;
-                            tile.soldiers += soldiers;
-                        }
+                        int soldiers = Mathf.CeilToInt(tile.farmers * 0.2f);
+                        tile.farmers -= soldiers;
+                        tile.soldiers += soldiers;
                     }
                 }
         }
 
-
-        int advCultures = Mathf.FloorToInt(advCulturePercentage * cultures.Count);
-
-        for(int i = 0; i < advCultures; i++)
-        { 
-            int index = Mathf.FloorToInt(Random.Range(0.0f, cultures.Count - 0.01f));
-
-            if (cultures[index].tribal)
-            {
-                WS_Culture oldCulture = cultures[index];
-                WS_Tile capital = oldCulture.capital;
-
-                WS_Culture newCulture = new WS_Culture(oldCulture, oldCulture.capital);
-
-                oldCulture.capital.culture = newCulture;
-                cultures.Add(newCulture);
-                cultures.Remove(oldCulture);
-
-                advCultures--;
-            }
-        }
-
-
-        int advReligions = Mathf.FloorToInt(advReligionPercentage * religions.Count);
-
-        for (int i = 0; i < advReligions; i++)
-        {
-            int index = Mathf.FloorToInt(Random.Range(0.0f, religions.Count - 0.01f));
-
-            if (religions[index].tribal)
-            {
-                WS_Religion oldReligion = religions[index];
-                WS_Tile capital = oldReligion.capital;
-
-                WS_Religion newReligion = new WS_Religion(oldReligion, oldReligion.capital);
-
-                oldReligion.capital.religion = newReligion;
-                religions.Add(newReligion);
-                religions.Remove(oldReligion);
-
-                advReligions--;
-            }
-        }
 
 
         for (int i = 0; i < WS_World.sizeX; i++)

@@ -181,7 +181,7 @@ public class WS_TileRenderer
                     case InfrastructureType.SANITATION:     level = tile.infrastructureLevels[(int)InfrastructureType.SANITATION]; break;
                     case InfrastructureType.FOOD:           level = tile.infrastructureLevels[(int)InfrastructureType.FOOD]; break;
                     case InfrastructureType.HEALTHCARE:     level = tile.infrastructureLevels[(int)InfrastructureType.HEALTHCARE]; break;
-                    case InfrastructureType.DECADENCE:      level = tile.infrastructureLevels[(int)InfrastructureType.DECADENCE]; break;
+                    case InfrastructureType.UNREST:         level = tile.infrastructureLevels[(int)InfrastructureType.UNREST]; break;
                     case InfrastructureType.CULTURE:        level = tile.infrastructureLevels[(int)InfrastructureType.CULTURE]; break;
                     case InfrastructureType.RELIGION:       level = tile.infrastructureLevels[(int)InfrastructureType.RELIGION]; break;
                     case InfrastructureType.CONSTRUCTION:   level = tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION]; break;

@@ -3,32 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-//tribal
-public class ReligiousBirthEvent : WS_BaseEvent
-{
-    public ReligiousBirthEvent() { eventName = "Religious Birth"; module = EventModule.RELIGION; }
-
-    protected override bool FireCheck()
-    {
-        return tile.population > 50000.0f && tile.religion.tribal;
-    }
-
-    protected override bool SuccessCheck()
-    {
-        return Random.Range(0.0f, 1.0f) < tile.farmers * 0.0000001f;
-    }
-
-    protected override void Success()
-    {
-        tile.religion = new WS_Religion(tile.religion, tile);
-
-        foreach (WS_Tile neighbor in tile.Neighbors())
-            if (neighbor.religion != null)
-                if (neighbor.religion.capital != neighbor)
-                    neighbor.religion = tile.religion;
-    }
-}
-
 
 public class ReligiousAdoptionEvent : WS_BaseEvent
 {
@@ -59,8 +33,10 @@ public class ReligiousAdoptionEvent : WS_BaseEvent
 
             float growthBalance = neighboringReligion.lastPopGrowth / tile.lastPopGrowth;
 
-            float influenceBalance = neighboringReligion.religion.influenceBonus - tile.religion.influenceBonus;
-            influenceBalance += neighboringReligion.religionBonus - tile.religionBonus;
+            float neighborInfluence = (neighboringReligion.religion.influenceBonus + neighboringReligion.religionBonus) * neighboringReligion.religion.influenceMul;
+            float influence = (tile.religion.influenceBonus + tile.religionBonus) * tile.religion.influenceMul;
+
+            float influenceBalance = neighborInfluence / influence;
 
             float cultureBalance = neighboringReligion.culture.influenceBonus - tile.culture.influenceBonus;
 
@@ -69,9 +45,11 @@ public class ReligiousAdoptionEvent : WS_BaseEvent
             if (neighboringReligion.religion == neighboringReligion.government.rulingReligion)  governmentBonus += 1.0f;
             if (tile.religion == tile.government.rulingReligion)                                governmentBonus -= 1.0f;
 
+            if(tile.government == neighboringReligion.government)                               governmentBonus += 0.25f;
+
             float religionBalance = (popBalance + growthBalance + influenceBalance + cultureBalance + governmentBonus) / 5.0f;
 
-            if (Random.Range(0.0f, 1.0f) < religionBalance * 0.0005f)
+            if (Random.Range(0.0f, 1.0f) < religionBalance * 0.001f)
             {
                 adoptedReligion = neighboringReligion;
                 return true;
@@ -83,7 +61,9 @@ public class ReligiousAdoptionEvent : WS_BaseEvent
 
     protected override void Success()
     {
+        tile.religion.influenceMul -= 0.1f;
         tile.religion = adoptedReligion.religion;
+        tile.religion.influenceMul += 0.15f;
     }
 }
 
@@ -99,7 +79,7 @@ public class ReligiousMergeEvent : WS_BaseEvent
         neighboringReligions.Clear();
         mergedReligion = null;
 
-        if (!tile.religion.tribal && !tile.religion.merged)
+        if (!tile.religion.merged)
         {
             foreach (WS_Tile neighbor in tile.CulturedNeighbors())
             {
@@ -141,6 +121,7 @@ public class ReligiousMergeEvent : WS_BaseEvent
     {
         mergedReligion.religion.merged = true;
         tile.religion = new WS_Religion(tile.religion, mergedReligion.religion, tile);
+        tile.religion.influenceMul = 2.5f;
 
         foreach (WS_Tile neighbor in tile.Neighbors())
             if(neighbor.religion != null)
@@ -155,12 +136,12 @@ public class ReligiousEvolutionEvent : WS_BaseEvent
 
     protected override bool FireCheck()
     {
-        return !tile.religion.tribal;
+        return tile.religion.capital == tile;
     }
 
     protected override bool SuccessCheck()
     {
-        return Random.Range(0.0f, 1.0f) < 0.0001f;
+        return Random.Range(0.0f, 1.0f) < (0.001f / tile.religion.influenceMul);
     }
 
     protected override void Success()
@@ -170,36 +151,33 @@ public class ReligiousEvolutionEvent : WS_BaseEvent
 }
 
 
-public class ReligiousReformEvent : WS_BaseEvent
+public class ReligiousCollapseEvent : WS_BaseEvent
 {
-    public ReligiousReformEvent() { eventName = "Religious Reform"; module = EventModule.RELIGION; }
+    public ReligiousCollapseEvent() { eventName = "Religious Collapse"; module = EventModule.RELIGION; }
 
     protected override bool FireCheck()
     {
-        return !tile.religion.tribal;
+        return tile.religion.capital == tile;
     }
 
     protected override bool SuccessCheck()
     {
-        tile.religion.decadence += 0.0001f;
+        tile.religion.influenceMul = Mathf.Lerp(tile.religion.influenceMul, 1.0f, 0.1f);
+        tile.religion.syncretism = Mathf.Lerp(tile.religion.syncretism, 5.0f, 0.1f);
 
-        if (tile.religion.capital == tile)
-        {
-            tile.religion.decadence -= 0.03f;
-
-            if (tile.religion.decadence < 0.0f)
-                tile.religion.decadence = 0.0f;
-
-            return Random.Range(0.0f, 1.0f) < tile.religion.corruption * 0.0001f;
-        }
+        if (tile.culture.collapsed == 0)
+            return 1.0f / Mathf.Pow(tile.religion.influenceMul, 2) > Random.Range(0.0f, 2000f);
         else
+        {
+            tile.religion.collapsed--;
             return false;
+        }
     }
 
     protected override void Success()
     {
-        tile.religion.syncretism += 20.0f;
-        tile.religion.influenceBonus -= 7.0f;
-        tile.religion.decadence = 0.0f;
+        tile.religion.syncretism += 30.0f;
+        tile.religion.influenceMul = 0.1f;
+        tile.religion.collapsed = Random.Range(10, 20);
     }
 }

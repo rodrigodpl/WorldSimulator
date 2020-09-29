@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum InfrastructureType { SANITATION, FOOD, HEALTHCARE, DECADENCE, CULTURE, RELIGION, CONSTRUCTION, MAX}
+public enum InfrastructureType { SANITATION, FOOD, HEALTHCARE, UNREST, CULTURE, RELIGION, CONSTRUCTION, WAR, MAX}
 
 public class WS_Infrastructure 
 {
@@ -114,35 +114,64 @@ public class WS_HealthcareInfrastructure : WS_Infrastructure
     }
 }
 
-public class WS_DecadenceInfrastructure : WS_Infrastructure
+public class WS_UnrestInfrastructure : WS_Infrastructure
 {
-    public WS_DecadenceInfrastructure()
+    public WS_UnrestInfrastructure()
     {
         name1_3 = "Magistrate";
         name4_6 = "Governor";
         name7_9 = "Administrator";
         nameWonder = "Monumental Parliament";
 
-        type = InfrastructureType.DECADENCE;
+        type = InfrastructureType.UNREST;
         baseCost = 12;
     }
 
     public override float Chance(WS_Tile tile)
     {
-        return (tile.culture.decadence + tile.religion.decadence) * 0.03f;
+        return (tile.unrest + tile.unrestCultural + tile.unrestReligious) * 0.05f;
     }
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
     {
-        tile.decadenceGain -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.DECADENCE], 2) * 0.0002f;
+        tile.unrestDecay += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.UNREST], 2) * 0.002f;
     }
 
     public override void Reverse(WS_Tile tile, int upgradeLevel)
     {
-        tile.decadenceGain += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.DECADENCE], 2) * 0.0002f;
+        tile.unrest -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.UNREST], 2) * 0.002f;
     }
 }
 
+
+public class WS_WarInfrastructure : WS_Infrastructure
+{
+    public WS_WarInfrastructure()
+    {
+        name1_3 = "Recruitment Camp";
+        name4_6 = "Barracks";
+        name7_9 = "Quartermaster";
+        nameWonder = "High Castle";
+
+        type = InfrastructureType.WAR;
+        baseCost = 12;
+    }
+
+    public override float Chance(WS_Tile tile)
+    {
+        return (1 / tile.armyBonus) + (1 / tile.government.armyProfessionalism) * 2.0f;
+    }
+
+    public override void Apply(WS_Tile tile, int upgradeLevel)
+    {
+        tile.armyBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.01f;
+    }
+
+    public override void Reverse(WS_Tile tile, int upgradeLevel)
+    {
+        tile.armyBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.01f;
+    }
+}
 
 public class WS_CultureInfrastructure : WS_Infrastructure
 {
@@ -159,10 +188,7 @@ public class WS_CultureInfrastructure : WS_Infrastructure
 
     public override float Chance(WS_Tile tile)
     {
-        if (tile.culture.influenceBonus < 0)
-            return Mathf.Sqrt(-tile.culture.influenceBonus * 0.3f);
-        else
-            return 1.0f / (tile.culture.influenceBonus + 0.5f);
+        return (1.0f / tile.culture.influenceMul) * 2.0f;
     }
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
@@ -192,10 +218,7 @@ public class WS_ReligionInfrastructure : WS_Infrastructure
 
     public override float Chance(WS_Tile tile)
     {
-        if (tile.religion.influenceBonus < 0)
-            return Mathf.Sqrt(-tile.religion.influenceBonus * 0.3f);
-        else
-            return 1.0f / (tile.religion.influenceBonus + 0.5f);
+        return (1.0f / tile.religion.influenceMul) * 2.0f;
     }
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
@@ -236,11 +259,12 @@ public class WS_ConstructionInfrastructure : WS_Infrastructure
 
     public override void Apply(WS_Tile tile, int upgradeLevel)
     {
-        tile.constructionBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.02f;
+        tile.constructionBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.02f;
     }
 
     public override void Reverse(WS_Tile tile, int upgradeLevel)
     {
-        tile.constructionBonus += Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.02f;
+        tile.constructionBonus -= Mathf.Pow(tile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION], 2) * 0.02f;
     }
 }
+

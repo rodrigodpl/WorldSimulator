@@ -23,7 +23,7 @@ public class WS_DroughtDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.DROUGHT; }
 
-    override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; }
+    override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; tile.prosperity *= 0.8f; tile.unrest += 30.0f; }
     override public void Reverse(WS_Tile tile) { tile.habitability += 40.0f; }
 
     override public float Chance(WS_Tile tile)
@@ -37,7 +37,7 @@ public class WS_FloodDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.FLOOD; }
 
-    override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; tile.infrastructurePoints -= 10.0f; }
+    override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; tile.infrastructurePoints -= 10.0f; tile.prosperity *= 0.8f; tile.unrest += 30.0f; }
     override public void Reverse(WS_Tile tile) { tile.habitability += 40.0f; }
 
     override public float Chance(WS_Tile tile)
@@ -51,7 +51,7 @@ public class WS_TsunamiDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.TSUNAMI; }
 
-    override public void Apply(WS_Tile tile) { tile.sanitation -= 25; tile.infrastructurePoints -= 30.0f; }
+    override public void Apply(WS_Tile tile) { tile.sanitation -= 25; tile.infrastructurePoints -= 30.0f; tile.prosperity *= 0.8f; tile.unrest += 30.0f; }
     override public void Reverse(WS_Tile tile) { tile.sanitation += 25; }
 
     public override int AreaOfEffect() { return (int)Random.Range(3.0f, 6.0f); }
@@ -72,7 +72,7 @@ public class WS_PlagueDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.PLAGUE; }
 
-    override public void Apply(WS_Tile tile) { tile.sanitation -= 30; }
+    override public void Apply(WS_Tile tile) { tile.sanitation -= 30; tile.unrest += 5.0f; }
     override public void Reverse(WS_Tile tile) { tile.sanitation += 30; }
 
     public override int AreaOfEffect() { return (int)Random.Range(1.0f, 3.0f); }

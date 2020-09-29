@@ -52,7 +52,7 @@ public class WS_InfPage : MonoBehaviour
             sanitationField.text    = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.SANITATION].ToString();
             foodField.text          = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.FOOD].ToString();
             healthcareField.text    = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.HEALTHCARE].ToString();
-            decadenceField.text     = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.DECADENCE].ToString();
+            decadenceField.text     = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.UNREST].ToString();
             cultureField.text       = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.CULTURE].ToString();
             religiousField.text     = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.RELIGION].ToString();
             constructionField.text  = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.CONSTRUCTION].ToString();
@@ -88,11 +88,11 @@ public class WS_InfPage : MonoBehaviour
 
     public void changeDecadence()
     {
-        int prevLevel = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.DECADENCE];
-        WS_World.infrastructure[(int)InfrastructureType.DECADENCE].Reverse(WS_TilePanel.selectedTile, prevLevel);
-        WS_World.infrastructure[(int)InfrastructureType.DECADENCE].Apply(WS_TilePanel.selectedTile, int.Parse(sanitationField.text));
+        int prevLevel = WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.UNREST];
+        WS_World.infrastructure[(int)InfrastructureType.UNREST].Reverse(WS_TilePanel.selectedTile, prevLevel);
+        WS_World.infrastructure[(int)InfrastructureType.UNREST].Apply(WS_TilePanel.selectedTile, int.Parse(sanitationField.text));
 
-        WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.DECADENCE] = int.Parse(decadenceField.text);
+        WS_TilePanel.selectedTile.infrastructureLevels[(int)InfrastructureType.UNREST] = int.Parse(decadenceField.text);
     }
 
     public void changeCulture()

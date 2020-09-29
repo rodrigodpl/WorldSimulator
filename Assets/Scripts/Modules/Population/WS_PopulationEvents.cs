@@ -13,7 +13,7 @@ public class PopulationGrowthEvent : WS_BaseEvent
         float habitability = tile.habitability;
 
         if (tile.habitability - 100.0f < 0.0f)
-            habitability += Mathf.Min(tile.culture.survivalism, 100.0f - tile.habitability);
+            habitability += Mathf.Min(tile.culture.expansionism, 100.0f - tile.habitability);
 
         float habitabilityBonus = 1.0f;
 
@@ -53,14 +53,17 @@ public class PopulationGrowthEvent : WS_BaseEvent
 
         neighborBonus /= 6;
 
+        // Prosperity bonus
+        float prosperityBonus = (1.0f + (1.0f + (tile.prosperity / tile.population) / 2.0f) / 2.0f);
+
 
         // Growth
 
-        tile.foodUnits = tile.farmers * tile.foodEfficiency * tile.culture.FoodEfficiency * habitabilityBonus * healthcareBonus;
+        tile.foodUnits = tile.farmers * tile.foodEfficiency * tile.culture.FoodEfficiency * habitabilityBonus * healthcareBonus * prosperityBonus;
         tile.foodUnits += neighborBonus;
         tile.foodUnits *= 1000.0f;
 
-        tile.storedFood = (tile.foodUnits - tile.population) * (tile.storage * 0.01f) * 0.001f;
+        tile.storedFood = (tile.foodUnits - tile.population) * 0.0005f;
 
         float popGrowth = (tile.foodUnits - tile.population) * 0.01f;
 
@@ -83,35 +86,27 @@ public class PopulationGrowthEvent : WS_BaseEvent
         // New Citizen 
         for (int i = 0; i < Mathf.CeilToInt(tile.population / 1000.0f) - lastPop; i++)
         {
-            if (Random.Range(0.0f, 1.0f) < 0.15f)
-                tile.soldiers++;
-            else if (Random.Range(0.0f, 1.0f) < 0.15f)
-                tile.builders++;
-            else if (Random.Range(0.0f, 1.0f) < 0.15f)
-                tile.traders++;
-            else
-                tile.farmers++;
+            float selector = Random.Range(0.0f, 1.0f);
+
+            if (selector < 0.2f)        tile.soldiers++;
+            else if (selector < 0.3f)   tile.builders++;
+            else if (selector < 0.4f)   tile.traders++;
+            else if (selector < 0.5f)   tile.scholars++;
+            else                        tile.farmers++;
         }
 
         // Lost Citizen
         for (int i = 0; i < lastPop - Mathf.CeilToInt(tile.population / 1000.0f); i++)
         {
-            if (tile.soldiers > 0)
-                tile.soldiers--;
-            if (tile.traders > 0)
-                tile.traders--;
-            else if (tile.builders > 0)
-                tile.builders--;
-            else
-                tile.farmers--;
+            if (tile.scholars > 0)      tile.scholars--;
+            else if (tile.builders > 0) tile.builders--;
+            else if (tile.traders > 0)  tile.traders--;
+            else if (tile.soldiers > 0) tile.soldiers--;
+            else                        tile.farmers--;
         }
 
         if (tile.population <= 0.0f)
-        {
-            tile.population = 0.0f;
-            tile.disaster = null;
-            tile.storedFood = 0.0f;
-        }
+            tile.ClearPopulation();
 
     }
 }
@@ -131,14 +126,17 @@ public class ColonizationEvent : WS_BaseEvent
 
         bool fire = false;
 
-        foreach (WS_Tile neighbor in tile.Neighbors())
+        if (tile.lastPopGrowth < 0.0f)
         {
-            if (neighbor.population <= 0.0f)
+            foreach (WS_Tile neighbor in tile.Neighbors())
             {
-                if (tile.culture.survivalism + tile.culture.expansionism + neighbor.habitability > 80.0f)
+                if (neighbor.population <= 0.0f)
                 {
-                    possibleColonization.Add(neighbor);
-                    fire = true;
+                    if (tile.culture.expansionism + neighbor.habitability > 80.0f)
+                    {
+                        possibleColonization.Add(neighbor);
+                        fire = true;
+                    }
                 }
             }
         }
@@ -167,10 +165,18 @@ public class ColonizationEvent : WS_BaseEvent
         tile.population -= tile.lastPopGrowth;
         dest.population += tile.lastPopGrowth;
 
-        dest.farmers++;
+        dest.farmers = Mathf.Max(1,(int)tile.lastPopGrowth / 1000);
         dest.culture = tile.culture;
         dest.religion = tile.religion;
         dest.government = tile.government;
+
+        dest.availableTech = tile.availableTech;
+
+        foreach(WS_Tech tech in tile.researchedTech)
+        {
+            tech.Apply(dest);
+            dest.researchedTech.Add(tech);
+        }
     }
 
 }

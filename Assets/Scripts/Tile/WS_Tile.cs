@@ -30,15 +30,13 @@ public class WS_Tile
     public int builders         = 0;
     public int traders          = 0;
     public int soldiers         = 0;
+    public int scholars         = 0;
     public float foodUnits      = 0.0f;
-    public float foodEfficiency = 1.2f;
+    public float foodEfficiency = 1.1f;
     public float sanitation     = 30;
     public float healthcare     = -0.2f;
-    public float storage        = 10;
-    public float decadenceGain  = 0.005f;
     public float lastPopGrowth  = 0.0f;
     public float storedFood     = 0.0f;
-    public float happiness      = 50.0f;
 
     // Culture Data
     public WS_Culture culture   = null;
@@ -58,14 +56,30 @@ public class WS_Tile
     public WS_Infrastructure plannedInfrastructure = null;
     public float constructionBonus = 0.0f;
 
-    //Government Data
+    // Government Data
     public WS_Government government = null;
+    public float unrest = 0.0f;
+    public float unrestCultural = 0.0f;
+    public float unrestReligious = 0.0f;
+    public float unrestDecay = 0.8f;
 
-    // Commerce 
+    // War
+    public float armyBonus = 1.0f;
+    public float defenseBonus = 1.0f;
+
+    // Commerce Data
     public float prosperity = 0.0f;
     public WS_ResourceSource resource = null;
     public WS_ResourceStack[] resStacks = new WS_ResourceStack[(int)ResourceType.MAX];
     public WS_CommerceCaravan caravan = null;
+    public float qualityBonus = 1.0f;
+    public float exploitationBonus = 1.0f;
+
+    // Tech Data
+    public WS_Tech currentTech = null;
+    public float storedTechPoints = 0.0f;
+    public List<WS_Tech> availableTech = new List<WS_Tech>();
+    public List<WS_Tech> researchedTech = new List<WS_Tech>();
 
     public List<WS_Tile> Neighbors(int radius = 1)     // Returns, or loads if unloaded, the tile's neigbors in (radius)
     {
@@ -116,4 +130,56 @@ public class WS_Tile
 
         return false;
     }
+
+    public void ClearPopulation()
+    {
+        population = 0.0f;
+        farmers = builders = traders = soldiers = scholars = 0;
+        foodUnits = 0.0f;
+        foodEfficiency = 1.1f;
+        sanitation = 30;
+        healthcare = -0.2f;
+        unrestDecay = 0.8f;
+        lastPopGrowth = 0.0f;
+        storedFood = 0.0f;
+        unrest = unrestCultural = unrestReligious = 0.0f;
+
+        culture = null;
+        cultureBonus = 0.0f;
+
+        disaster = null;
+        disasterDuration = 0;
+
+        religion = null;
+        religionBonus = 0.0f;
+
+        infrastructurePoints = 0.0f;
+
+        for (int i = 0; i < infrastructureLevels.Length; i++)
+            infrastructureLevels[i] = 1;
+
+        plannedInfrastructure = null;
+        constructionBonus = 0.0f;
+
+        government = null;
+
+        prosperity = 0.0f;
+
+        foreach (WS_ResourceStack stack in resStacks)
+            stack.amount = 0;
+
+        caravan = null;
+
+        qualityBonus = 1.0f;
+        exploitationBonus = 1.0f;
+
+        armyBonus = 1.0f;
+        defenseBonus = 1.0f;
+
+        currentTech = null;
+        storedTechPoints = 0.0f;
+        availableTech.Clear();
+        researchedTech.Clear();
+    }
+
 }

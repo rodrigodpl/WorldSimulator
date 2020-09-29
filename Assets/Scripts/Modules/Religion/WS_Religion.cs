@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class WS_Religion : WS_Entity
 {
-    public static float MAX_TRAITS_RELIGION = 3.0f;
-    public static float MIN_TRAITS_RELIGION = 3.0f;
-    public static float MAX_TRAITS_TRIBAL = 3.0f;
-    public static float MIN_TRAITS_TRIBAL = 1.0f;
+    public static int MAX_TRAITS_RELIGION = 2;
+    public static int MIN_TRAITS_RELIGION = 4;
+
+    public int collapsed = 0;
 
     public float corruption = 0.0f;
     public float power = 1.0f;

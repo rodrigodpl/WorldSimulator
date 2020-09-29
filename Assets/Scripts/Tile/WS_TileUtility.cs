@@ -5,11 +5,11 @@ using System.Linq;
 
 public class WS_TileUtility 
 {
-    private WS_World world             = null;             // pointer to world
-    private Vector2Int position     = Vector2Int.zero;  // positon in the tile array, not real transform position
-    public List<WS_Tile> neighbors_1  = new List<WS_Tile>();             // neighboring tiles in radius 1
-    public List<WS_Tile> neighbors_2  = new List<WS_Tile>();             // neighboring tiles in radius 2
-    public List<WS_Tile> neighbors_3  = new List<WS_Tile>();             // neighboring tiles in radius 3
+    private WS_World world              = null;             // pointer to world
+    private Vector2Int position         = Vector2Int.zero;  // positon in the tile array, not real transform position
+    public List<WS_Tile> neighbors_1    = new List<WS_Tile>();             // neighboring tiles in radius 1
+    public List<WS_Tile> neighbors_2    = new List<WS_Tile>();             // neighboring tiles in radius 2
+    public List<WS_Tile> neighbors_3    = new List<WS_Tile>();             // neighboring tiles in radius 3
 
 
 

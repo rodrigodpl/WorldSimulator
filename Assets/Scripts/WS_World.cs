@@ -14,35 +14,36 @@ public class WS_World : MonoBehaviour
     public static List<WS_Disaster> disasters               = new List<WS_Disaster>();
     public static List<WS_Infrastructure> infrastructure    = new List<WS_Infrastructure>();
     public static List<WS_ResourceSource> resources         = new List<WS_ResourceSource>();
+    public static List<WS_Tech> techs                       = new List<WS_Tech>();
     private WS_WorldGenerator worldGenerator                = null;     // world generator, which fills blank tiles with geographical data
 
-    public static int sizeX                 = 150;      // number of columns in the map
-    public static int sizeY                 = 120;      // number of rows in the map
+    public static int sizeX                                 = 150;      // number of columns in the map
+    public static int sizeY                                 = 120;      // number of rows in the map
     
     // Rendering  Variables
-    [HideInInspector] public float lowestPoint          = 0.0f;         // all these variables are used for reference when drawing 
-    [HideInInspector] public float highestPoint         = 0.0f;
-    [HideInInspector] public float lowestTemperature    = 200.0f;
-    [HideInInspector] public float highestTemperature   = -200.0f;
-    [HideInInspector] public float maxLandErosion       = 0.0f;
-    [HideInInspector] public float maxSeaErosion        = 0.0f;
-    [HideInInspector] public float maxRiverStrength     = 0.0f;
-    [HideInInspector] public float maxHabitability      = -200.0f;
-    [HideInInspector] public float minHabitability      = 200.0f;
-    [HideInInspector] public static float maxGrowth     = -20000.0f;
-    [HideInInspector] public static float minGrowth     = 20000.0f;
+    [HideInInspector] public float lowestPoint              = 0.0f;         // all these variables are used for reference when drawing 
+    [HideInInspector] public float highestPoint             = 0.0f;
+    [HideInInspector] public float lowestTemperature        = 200.0f;
+    [HideInInspector] public float highestTemperature       = -200.0f;
+    [HideInInspector] public float maxLandErosion           = 0.0f;
+    [HideInInspector] public float maxSeaErosion            = 0.0f;
+    [HideInInspector] public float maxRiverStrength         = 0.0f;
+    [HideInInspector] public float maxHabitability          = -200.0f;
+    [HideInInspector] public float minHabitability          = 200.0f;
+    [HideInInspector] public static float maxGrowth         = -20000.0f;
+    [HideInInspector] public static float minGrowth         = 20000.0f;
 
 
     // Utility variables
-    [HideInInspector] public Vector2 realSize = new Vector2();
-    public Texture2D hexTex = null;
-    [HideInInspector] public Texture2D output = null;
+    [HideInInspector] public Vector2 realSize               = new Vector2();
+    public Texture2D hexTex                                 = null;
+    [HideInInspector] public Texture2D output               = null;
     [HideInInspector] private SpriteRenderer spriteRenderer = null;
-    [HideInInspector] public Color32[] pixels = null;
+    [HideInInspector] public Color32[] pixels               = null;
 
-    public static SimulationSpeed speed = SimulationSpeed.NORMAL;
-    public static int year = -2000;
-    public Stopwatch timer = new Stopwatch();
+    public static SimulationSpeed speed                     = SimulationSpeed.NORMAL;
+    public static int year                                  = -2000;
+    public Stopwatch timer                                  = new Stopwatch();
 
     public WS_Tile GetTile(Vector2Int position)                        // returns a tile from the map with its array position
     {
@@ -59,7 +60,6 @@ public class WS_World : MonoBehaviour
 
 
         // Culture Events
-        eventPool.Add(new CultureBirthEvent());
         eventPool.Add(new CulturalAdoptionEvent());
         eventPool.Add(new CulturalMergeEvent());
         eventPool.Add(new CulturalEvolutionEvent());
@@ -79,11 +79,10 @@ public class WS_World : MonoBehaviour
 
 
         // Religion Events
-        eventPool.Add(new ReligiousBirthEvent());
         eventPool.Add(new ReligiousAdoptionEvent());
         eventPool.Add(new ReligiousMergeEvent());
         eventPool.Add(new ReligiousEvolutionEvent());
-        eventPool.Add(new ReligiousReformEvent());
+        eventPool.Add(new ReligiousCollapseEvent());
 
         // Infrastructure Events
         eventPool.Add(new InfrastructureProductionEvent());
@@ -92,15 +91,16 @@ public class WS_World : MonoBehaviour
             infrastructure.Add(new WS_SanitationInfrastructure());
             infrastructure.Add(new WS_FoodInfrastructure());
             infrastructure.Add(new WS_HealthcareInfrastructure());
-            infrastructure.Add(new WS_DecadenceInfrastructure());
+            infrastructure.Add(new WS_UnrestInfrastructure());
+            infrastructure.Add(new WS_WarInfrastructure());
             infrastructure.Add(new WS_CultureInfrastructure());
             infrastructure.Add(new WS_ReligionInfrastructure());
             infrastructure.Add(new WS_ConstructionInfrastructure());
 
 
         // Government Events
-        eventPool.Add(new UprisingReligiousEvent());
-        eventPool.Add(new UprisingCulturalEvent());
+        eventPool.Add(new UnrestEvent());
+        eventPool.Add(new UprisingEvent());
 
         // Diplomacy Events
         eventPool.Add(new FindNeighborsEvent());
@@ -139,16 +139,28 @@ public class WS_World : MonoBehaviour
         eventPool.Add(new ArmyRecruitmentEvent());
         eventPool.Add(new BattleFoughtEvent());
 
+        // Technology
+        eventPool.Add(new WS_TechSelection());
+        eventPool.Add(new WS_TechResearch());
+        eventPool.Add(new WS_TechSpread());
+
+        // Techs 
+            techs.Add(new WS_TechWarI());               techs.Add(new WS_TechWarII());              techs.Add(new WS_TechWarIII());             techs.Add(new WS_TechWarIV());
+            techs.Add(new WS_TechDefenseI());           techs.Add(new WS_TechDefenseII());          techs.Add(new WS_TechDefenseIII());
+            techs.Add(new WS_TechConstructionI());      techs.Add(new WS_TechConstructionII());     techs.Add(new WS_TechConstructionIII());    techs.Add(new WS_TechConstructionIV());
+            techs.Add(new WS_TechSanitationI());        techs.Add(new WS_TechSanitationII());       techs.Add(new WS_TechSanitationII());
+            techs.Add(new WS_TechCultureI());           techs.Add(new WS_TechCultureII());          techs.Add(new WS_TechCultureIII());         techs.Add(new WS_TechCultureIV());
+            techs.Add(new WS_TechExploitationI());      techs.Add(new WS_TechExploitationII());     techs.Add(new WS_TechExploitationIII());
+            techs.Add(new WS_TechCommerceI());          techs.Add(new WS_TechCommerceII());         techs.Add(new WS_TechCommerceIII());        techs.Add(new WS_TechCommerceIV());
+            techs.Add(new WS_TechAdministrationI());    techs.Add(new WS_TechAdministrationII());   techs.Add(new WS_TechAdministrationIII());
+            techs.Add(new WS_TechPopulationI());        techs.Add(new WS_TechPopulationII());       techs.Add(new WS_TechPopulationIII());      techs.Add(new WS_TechPopulationIV());
+            techs.Add(new WS_TechHealthcareI());        techs.Add(new WS_TechHealthcareII());       techs.Add(new WS_TechHealthcareIII());
+            techs.Add(new WS_TechReligionI());          techs.Add(new WS_TechReligionII());         techs.Add(new WS_TechReligionIII());        techs.Add(new WS_TechReligionIV());
 
 
         // TRAITS (order is not relevant)
 
         // Culture Traits
-        cultureTraits.Add(new SurvivalistsTrait());
-        cultureTraits.Add(new ResilientTrait());
-        cultureTraits.Add(new UnadaptableTrait());
-        cultureTraits.Add(new SybaritesTrait());
-
         cultureTraits.Add(new MasterFarmersTrait());
         cultureTraits.Add(new AgriculturalFocusedTrait());
         cultureTraits.Add(new NeglectedFarmsTrait());
@@ -173,7 +185,6 @@ public class WS_World : MonoBehaviour
         cultureTraits.Add(new TolerantTrait());
         cultureTraits.Add(new IntolerantTrait());
         cultureTraits.Add(new RepressiveTrait());
-
 
         // Religion Traits
         religionTraits.Add(new GoverningChurchTrait());

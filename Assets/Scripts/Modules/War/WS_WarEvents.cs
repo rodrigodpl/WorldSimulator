@@ -16,25 +16,28 @@ public class ArmyRecruitmentEvent : WS_BaseEvent
     protected override void Success()
     {
         int newTroops = 0;
+        float professionalism = 1.0f;
 
         if (tile.soldiers > 0)
         {
             newTroops = tile.soldiers;
             tile.soldiers -= newTroops;
+            professionalism = tile.armyBonus;
+
         }
-        else if (tile.happiness > 30.0f && Random.Range(0.0f, 100.0f) < tile.happiness && tile.government.warScore < 30.0f)
+        else if (tile.unrest < 30.0f && Random.Range(0.0f, 100.0f) > tile.unrest && tile.government.warScore < 30.0f)
         {
             newTroops = Mathf.CeilToInt(0.05f * (tile.population / 1000.0f));
-            tile.happiness -= 20.0f;
-            tile.government.cohesion *= 0.98f;
+            tile.unrest += 10.0f;
+            professionalism = 0.7f;
         }
 
         if (newTroops > 0)
         {
-            tile.government.cohesion *= 0.99f;
-            tile.government.cohesion = Mathf.Lerp(tile.government.cohesion, 1.0f, 0.005f);
             tile.government.soldierPool += newTroops * 10;
             tile.population -= newTroops * 1000.0f;
+            tile.government.armyProfessionalism = Mathf.Lerp(tile.government.armyProfessionalism, professionalism, 
+                newTroops / tile.government.soldierPool);
         }
     }
 
@@ -47,7 +50,7 @@ public class ArmyRecruitmentEvent : WS_BaseEvent
             tile.government.soldierPool = Mathf.Max(0, tile.government.soldierPool - 10);
 
             if (tile.government.soldierPool == 0)
-                tile.government.cohesion = 1;
+                tile.government.armyProfessionalism = 1.0f;
         }
     }
 }
@@ -90,9 +93,9 @@ public class BattleFoughtEvent : WS_BaseEvent
             {
                 if (Random.Range(0.0f, 1.0f) < 0.3f)
                 {
-                    target.prosperity *= 0.8f;
+                    target.prosperity *= 0.9f;
                     target.government = tile.government;
-                    target.happiness = 20.0f;
+                    target.unrest += 20.0f;
                     tile.government.battleFought = true;
 
                     float warScore = 0.0f;
@@ -120,12 +123,10 @@ public class BattleFoughtEvent : WS_BaseEvent
         atkSoldiers = Mathf.CeilToInt(tile.government.soldierPool * tile.government.commandPower * Random.Range(0.5f, 1.5f));
         defSoldiers = Mathf.FloorToInt(Mathf.Min(target.government.soldierPool, atkSoldiers * Random.Range(0.8f, 1.5f)));
 
-        float cohesionRatio = tile.government.cohesion / target.government.cohesion;
-        cohesionRatio = Mathf.Clamp(cohesionRatio, 0.2f, 2.0f);
         float professionalismRatio = tile.government.armyProfessionalism / target.government.armyProfessionalism;
 
-        float atkPower = Random.Range(0.0f, atkSoldiers * cohesionRatio * professionalismRatio);
-        float defPower = Random.Range(0.0f, defSoldiers);
+        float atkPower = atkSoldiers * professionalismRatio * Random.Range(0.3f, 1.0f);
+        float defPower = Random.Range(0.0f, defSoldiers) * tile.defenseBonus;
 
         powerRatio = atkPower / defPower;
 
@@ -150,11 +151,11 @@ public class BattleFoughtEvent : WS_BaseEvent
         tile.government.warScore += warScore;
         target.government.warScore -= warScore;
 
-        tile.government.cohesion = Mathf.Lerp(tile.government.cohesion, 1.0f, 0.01f);
+        tile.government.armyProfessionalism += 0.1f;
 
-        target.prosperity *= 0.8f;
+        target.prosperity *= 0.9f;
         target.government = tile.government;
-        target.happiness = 20.0f;
+        target.unrest += 20.0f;
     }
 
     protected override void Fail()
@@ -172,7 +173,7 @@ public class BattleFoughtEvent : WS_BaseEvent
         else
             warScore += 5.0f;
 
-        target.government.cohesion = Mathf.Lerp(tile.government.cohesion, 1.0f, 0.01f);
+        tile.government.armyProfessionalism -= 0.1f;
 
         tile.government.warScore -= warScore;
         target.government.warScore += warScore;

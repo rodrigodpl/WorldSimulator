@@ -3,33 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-//tribal
-public class CultureBirthEvent : WS_BaseEvent
-{
-    public CultureBirthEvent() { eventName = "Culture Birth"; module = EventModule.CULTURE; }
-
-    protected override bool FireCheck()
-    {
-        return tile.population > 50000.0f && tile.culture.tribal;
-    }
-
-    protected override bool SuccessCheck()
-    {
-        return Random.Range(0.0f, 1.0f) < tile.farmers * 0.000001f;
-    }
-
-    protected override void Success()
-    {
-        tile.culture = new WS_Culture(tile.culture, tile);
-
-        foreach (WS_Tile neighbor in tile.Neighbors())
-            if (neighbor.culture != null)
-                if (neighbor.culture.capital != neighbor)
-                    neighbor.culture = tile.culture;
-    }
-}
-
-
 public class CulturalAdoptionEvent : WS_BaseEvent
 {
     public CulturalAdoptionEvent() { eventName = "Culture Adoption"; module = EventModule.CULTURE; }
@@ -59,18 +32,23 @@ public class CulturalAdoptionEvent : WS_BaseEvent
 
             float growthBalance = neighboringCulture.lastPopGrowth / tile.lastPopGrowth;
 
-            float influenceBalance = neighboringCulture.culture.influenceBonus - tile.culture.influenceBonus;
-            influenceBalance += neighboringCulture.cultureBonus - tile.cultureBonus;
+            float neighborInfluence = (neighboringCulture.culture.influenceBonus + neighboringCulture.cultureBonus) * neighboringCulture.culture.influenceMul;
+            float influence = (tile.culture.influenceBonus + tile.cultureBonus) * tile.culture.influenceMul;
+
+            float influenceBalance = neighborInfluence / influence;
 
             float governmentBonus = 0.0f;
 
             if (neighboringCulture.culture == neighboringCulture.government.rulingCulture)  governmentBonus += 1.0f;
             if (tile.culture == tile.government.rulingCulture)                              governmentBonus -= 1.0f;
 
+            if (tile.government == neighboringCulture.government)                           governmentBonus += 0.25f;
+            // Prosperity bonus
+            float prosperityBonus = (neighboringCulture.prosperity / neighboringCulture.population) / (tile.prosperity / tile.population);
 
-            float cultureBalance = (popBalance + growthBalance + influenceBalance + governmentBonus) / 4.0f;
+            float cultureBalance = (popBalance + growthBalance + influenceBalance + governmentBonus + prosperityBonus) / 5.0f;
 
-            if(Random.Range(0.0f, 1.0f) < cultureBalance * 0.001f)
+            if(Random.Range(0.0f, 1.0f) < cultureBalance * 0.002f)
             {
                 adoptedCulture = neighboringCulture;
                 return true;
@@ -82,7 +60,9 @@ public class CulturalAdoptionEvent : WS_BaseEvent
 
     protected override void Success()
     {
+        tile.culture.influenceMul -= 0.1f;
         tile.culture = adoptedCulture.culture;
+        tile.culture.influenceMul += 0.15f;
     }
 }
 
@@ -98,7 +78,7 @@ public class CulturalMergeEvent : WS_BaseEvent
         neighboringCultures.Clear();
         mergedCulture = null;
 
-        if (!tile.culture.tribal && !tile.culture.merged)
+        if (!tile.culture.merged)
         {
             foreach (WS_Tile neighbor in tile.CulturedNeighbors())
             {
@@ -140,6 +120,7 @@ public class CulturalMergeEvent : WS_BaseEvent
     {
         mergedCulture.culture.merged = true;
         tile.culture = new WS_Culture(tile.culture, mergedCulture.culture, tile);
+        tile.culture.influenceMul = 2.5f;
 
         foreach (WS_Tile neighbor in tile.Neighbors())
             if(neighbor.culture != null)
@@ -155,17 +136,18 @@ public class CulturalEvolutionEvent : WS_BaseEvent
 
     protected override bool FireCheck()
     {
-        return !tile.culture.tribal;
+        return tile.culture.capital == tile;
     }
 
     protected override bool SuccessCheck()
     {
-        return Random.Range(0.0f, 1.0f) < 0.0001f;
+        return Random.Range(0.0f, 1.0f) < (0.001f / tile.culture.influenceMul);
     }
 
     protected override void Success()
     {
         tile.culture.changeRandomTrait(tile);
+        tile.culture.influenceMul = 2.0f;
     }
 }
 
@@ -176,30 +158,27 @@ public class CulturalCollapseEvent : WS_BaseEvent
 
     protected override bool FireCheck()
     {
-        return !tile.culture.tribal;
+        return tile.culture.capital == tile;
     }
 
     protected override bool SuccessCheck()
     {
-        tile.culture.decadence += tile.decadenceGain * (tile.population / 1000.0f);
+        tile.culture.influenceMul = Mathf.Lerp(tile.culture.influenceMul, 1.0f, 0.1f);
+        tile.culture.syncretism = Mathf.Lerp(tile.culture.syncretism, 5.0f, 0.1f);
 
-        if (tile.culture.capital == tile)
-        {
-            tile.culture.decadence -= tile.culture.decadenceLoss;
-
-            if (tile.culture.decadence < 0.0f)
-                tile.culture.decadence = 0.0f;
-
-            return Random.Range(0.0f, 1.0f) < (tile.culture.decadence / 1000.0f) * 0.001f;
-        }
+        if(tile.culture.collapsed == 0)
+            return 1.0f / Mathf.Pow(tile.culture.influenceMul, 2) > Random.Range(0.0f, 2000f);
         else
+        {
+            tile.culture.collapsed--;
             return false;
+        }
     }
 
     protected override void Success()
     {
-        tile.culture.syncretism += 20.0f;
-        tile.culture.influenceBonus -= 7.0f;
-        tile.culture.decadence = 0.0f;
+        tile.culture.syncretism += 30.0f;
+        tile.culture.influenceMul = 0.1f;
+        tile.culture.collapsed = Random.Range(10, 20);
     }
 }
