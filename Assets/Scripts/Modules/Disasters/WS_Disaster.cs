@@ -11,6 +11,9 @@ public class WS_Disaster
     public virtual int AreaOfEffect() { return 1; }
     public virtual int AvgDuration() { return 10; }
 
+    public virtual string name() { return "WS_Disaster"; }
+    public virtual string description() { return "WS_DisasterDesc"; }
+
     public virtual void Apply(WS_Tile tile) { }
     public virtual void Reverse(WS_Tile tile) { }
 
@@ -22,6 +25,9 @@ public class WS_Disaster
 public class WS_DroughtDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.DROUGHT; }
+
+    public override string name() { return "Drought"; }
+    public override string description() { return "Lowers habitability and prosperity, increases unrest."; }
 
     override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; tile.prosperity *= 0.9f; tile.unrest += 7.5f; }
     override public void Reverse(WS_Tile tile) { tile.habitability += 40.0f; }
@@ -37,7 +43,10 @@ public class WS_FloodDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.FLOOD; }
 
-    override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; tile.infrastructurePoints -= 10.0f; tile.prosperity *= 0.95f; tile.unrest += 5.0f; }
+    public override string name() { return "Flood"; }
+    public override string description() { return "Lowers habitability and prosperity, increases unrest."; }
+
+    override public void Apply(WS_Tile tile) { tile.habitability -= 40.0f; tile.prosperity *= 0.95f; tile.unrest += 5.0f; }
     override public void Reverse(WS_Tile tile) { tile.habitability += 40.0f; }
 
     override public float Chance(WS_Tile tile)
@@ -50,8 +59,12 @@ public class WS_EarthQuakeDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.EARTHQUAKE; }
 
-    override public void Apply(WS_Tile tile) { tile.population *= 0.85f; tile.infrastructurePoints = 0.0f; tile.prosperity *= 0.7f; tile.unrest += 30.0f; }
+    public override string name() { return "Earthquake"; }
+    public override string description() { return "Lowers population, infrastructure and prosperity."; }
+
+    override public void Apply(WS_Tile tile) { tile.population *= 0.85f; tile.infrastructurePoints = 0.0f; tile.prosperity *= 0.7f; }
     override public void Reverse(WS_Tile tile) { }
+
     public override int AvgDuration() { return 1; }
 
     override public float Chance(WS_Tile tile)
@@ -65,7 +78,10 @@ public class WS_TsunamiDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.TSUNAMI; }
 
-    override public void Apply(WS_Tile tile) { tile.sanitation -= 25; tile.infrastructurePoints -= 30.0f; tile.prosperity *= 0.9f; tile.unrest += 5.0f; }
+    public override string name() { return "Tsunami"; }
+    public override string description() { return "Lowers sanitation and infrastructure, increases unrest."; }
+
+    override public void Apply(WS_Tile tile) { tile.sanitation -= 25; tile.infrastructurePoints -= 30.0f; tile.unrest += 5.0f; }
     override public void Reverse(WS_Tile tile) { tile.sanitation += 25; }
 
     public override int AreaOfEffect() { return (int)Random.Range(3.0f, 6.0f); }
@@ -85,6 +101,9 @@ public class WS_TsunamiDisaster : WS_Disaster
 public class WS_PlagueDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.PLAGUE; }
+
+    public override string name() { return "Plague"; }
+    public override string description() { return "Lowers sanitation, increases unrest."; }
 
     override public void Apply(WS_Tile tile) { tile.sanitation -= 30; tile.unrest += 5.0f; }
     override public void Reverse(WS_Tile tile) { tile.sanitation += 30; }
@@ -106,6 +125,9 @@ public class WS_PlagueDisaster : WS_Disaster
 public class WS_FireDisaster : WS_Disaster
 {
     public override DisasterType Type() { return DisasterType.FIRE; }
+
+    public override string name() { return "Forest Fire"; }
+    public override string description() { return "Lowers population and prosperity, increases unrest."; }
 
     override public void Apply(WS_Tile tile) { tile.population *= 0.99f; tile.unrest += 5.0f; tile.prosperity *= 0.9f; }
     override public void Reverse(WS_Tile tile) { }

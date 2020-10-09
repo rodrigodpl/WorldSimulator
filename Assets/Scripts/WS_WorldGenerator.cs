@@ -8,7 +8,7 @@ public enum Biome
     ALPINE, ALPINE_SHRUBLAND, ALPINE_FOREST,
     TEMPERATE_GRASSLAND, TEMPERATE_FOREST, TEMPERATE_SHRUBLAND, WETLANDS,
     SAVANNAH, TEMPERATE_DESERT, TROPICAL_GRASSLAND, TROPICAL_JUNGLE,
-    ARID_DESERT, WATER, ICE, MAX_BIOMES
+    ARID_DESERT, WATER, MAX_BIOMES
 }
 
 public class River
@@ -26,12 +26,12 @@ public class WS_WorldGenerator
     private int landWS_TileNum              = 0;        // used for land mass calculations
 
     // Generation main variables
-    public int shallowGenerators            = 3;        // 2 - 4        // shallow generators will create islands and archipelagos
-    public int continentalGenerators        = 4;        // 2 - 4        // continental generators will create continental masses
-    public int alpineGenerators             = 2;        // 2 - 4        // alpine generators will create mountains ranges
-
-    public float landmassPercentage         = 0.35f;    // 30 - 80
-    public float altitudeRandomizer         = 500.0f;   // 50 - 500
+    public static int shallowGenerators            = 3;        // 2 - 4        // shallow generators will create islands and archipelagos
+    public static int continentalGenerators        = 4;        // 2 - 4        // continental generators will create continental masses
+    public static int alpineGenerators             = 2;        // 2 - 4        // alpine generators will create mountains ranges
+            
+    public static float landmassPercentage         = 0.35f;    // 0.25 - 0.5
+    public static float altitudeRandomizer         = 550.0f;   // 50 - 700
 
 
     // Generation secondary variables (only recommended for advanced users)
@@ -42,9 +42,8 @@ public class WS_WorldGenerator
     public static int humiditySmoothing     = 1;        // 1 - 4        // The higher the value, the smoother the humidity will be
     public static int erosionSmoothing      = 1;        // 1 - 4        // The higher the value, the smoother the erosion will be
 
-    public static float shallowRestriction  = 0.5f;     // 0.4 - 0.7    // The higher the value, the more fractured and small landmasses will be
-    public static float alpineRestriction   = 0.3f;     // 0.4 - 0.7    // The higher the value, the smaller mountain ranges will be
-
+    public static float shallowRestriction  = 0.5f;     // 0.2 - 0.7    // The higher the value, the more fractured and small landmasses will be
+    public static float alpineRestriction   = 0.3f;     // 0.2 - 0.7    // The higher the value, the smaller mountain ranges will be
 
     public static float maxTemperatureMod   = 10.0f;    // 5 - 20       // The higher the value, the more extreme temperature changes will be
     public static float temperatureModNum   = 0.01f;    // 0.005 - 0.2  // The higher the value, the more diverse temperature changes will be
@@ -75,18 +74,12 @@ public class WS_WorldGenerator
     public static float riverHumEffect      = 0.1f;     // 0.05 - 0.3   // The higher the value, the more effect rivers will have on humidity
     public static float riverAltEffect      = 1.5f;     // 0.5 - 2.5    // The higher the value, the more effect rivers will have on altitude
 
+    public static float minHabitability     = 70.0f;
     public static float baseHabitability    = 100.0f;   // 50 - 150     // The higher the value, the more habitable the world will be
-    public static float habAltMultiplier    = 5.0f;    // 0.005 - 0.03 // The higher the value, the more uninhabitable higher tiles will be
+    public static float habAltMultiplier    = 5.0f;    // 0.005 - 0.03  // The higher the value, the more uninhabitable higher tiles will be
     public static float habTempMultiplier   = 2.0f;     // 2 - 10       // The higher the value, the more uninhabitable hot or cold tiles will be
-    public static float habHumMultiplier    = 1.0f;    // 0.1 - 2.5    // The higher the value, the more uninhabitable dry tiles will be
+    public static float habHumMultiplier    = 1.0f;    // 0.1 - 2.5     // The higher the value, the more uninhabitable dry tiles will be
     public static float habWaterMultiplier  = 20.0f;    // 0 - 50       // The higher the value, the more habitable coastal and river tiles will be
-
-
-    public int minCultureNum = 20;
-    public float advCulturePercentage = 0.35f;
-    public float advReligionPercentage = 0.2f;
-    public float minHabitability = 70.0f;
-
 
 
     public void PopulateWorld()
@@ -95,51 +88,49 @@ public class WS_WorldGenerator
         List<WS_Religion> religions = new List<WS_Religion>();
         List<WS_Government> governments = new List<WS_Government>();
 
-        while (cultures.Count < minCultureNum)
-        {
-            for (int i = 0; i < WS_World.sizeX; i++)
-                for (int j = 0; j < WS_World.sizeY; j++)
+        for (int i = 0; i < WS_World.sizeX; i++)
+            for (int j = 0; j < WS_World.sizeY; j++)
+            {
+                WS_Tile tile = world.GetTile(new Vector2Int(i, j));
+
+                if (!tile.seaBody && tile.habitability >= minHabitability && tile.population == 0.0f)
                 {
-                    WS_Tile tile = world.GetTile(new Vector2Int(i, j));
+                    tile.population += tile.habitability * 50.0f * Random.Range(0.5f, 2.5f);
 
-                    if (!tile.seaBody && tile.habitability >= minHabitability && tile.population == 0.0f)
-                    {
-                        tile.population += tile.habitability * 50.0f * Random.Range(0.5f, 2.5f);
-
-                        foreach (WS_Tech tech in WS_World.techs)
-                            if (tech.requirements.Count == 0)
-                                tile.availableTech.Add(tech);
-                    }
-
-                    if (Random.Range(0.0f, 1.0f) < tile.population / 700000)
-                    {
-                        tile.culture = new WS_Culture(tile);
-                        tile.government = new WS_Government(tile);
-                        tile.government.rulingCulture = tile.culture;
-                        tile.government.preferredTech = (EventModule)Mathf.FloorToInt(Random.Range(0, (int)EventModule.MAX - 1));
-                        governments.Add(tile.government);
-                        cultures.Add(tile.culture);
-                        tile.population *= 1.5f;
-                    }
-
-                    if (Random.Range(0.0f, 1.0f) < tile.population / 2000000)
-                    {
-                        tile.religion = new WS_Religion(tile);
-                        religions.Add(tile.religion);
-                        tile.population *= 1.5f;
-                    }
-
-                    tile.farmers = Mathf.CeilToInt(tile.population / 1000.0f);
-                    tile.prosperity = tile.population * 0.5f;
-
-                    if (tile.government != null)
-                    {
-                        int soldiers = Mathf.CeilToInt(tile.farmers * 0.2f);
-                        tile.farmers -= soldiers;
-                        tile.soldiers += soldiers;
-                    }
+                    foreach (WS_Tech tech in WS_World.techs)
+                        if (tech.requirements.Count == 0)
+                            tile.availableTech.Add(tech);
                 }
-        }
+
+                if (Random.Range(0.0f, 1.0f) < tile.population / 700000)
+                {
+                    tile.culture = new WS_Culture(tile);
+                    tile.government = new WS_Government(tile);
+                    tile.government.rulingCulture = tile.culture;
+                    tile.government.preferredTech = (EventModule)Mathf.FloorToInt(Random.Range(0, (int)EventModule.MAX - 1));
+                    governments.Add(tile.government);
+                    cultures.Add(tile.culture);
+                    tile.population *= 1.5f;
+                }
+
+                if (Random.Range(0.0f, 1.0f) < tile.population / 2000000)
+                {
+                    tile.religion = new WS_Religion(tile);
+                    religions.Add(tile.religion);
+                    tile.population *= 1.5f;
+                }
+
+                tile.farmers = Mathf.CeilToInt(tile.population / 1000.0f);
+                tile.prosperity = tile.population * 0.5f;
+
+                if (tile.government != null)
+                {
+                    int soldiers = Mathf.CeilToInt(tile.farmers * 0.2f);
+                    tile.farmers -= soldiers;
+                    tile.soldiers += soldiers;
+                }
+            }
+
 
 
 
@@ -180,7 +171,7 @@ public class WS_WorldGenerator
                         tile.government = nearestGovernment;
                     }
 
-                    if(tile.religion == null)
+                    if (tile.religion == null)
                     {
                         WS_Religion nearestReligion = null;
                         int minDist = int.MaxValue;
@@ -782,10 +773,8 @@ public class WS_WorldGenerator
                     else                                                            tile.biome = Biome.ARID_DESERT;
                 }
                 else
-                {
-                    if (tile.avgTemperature < 5.0f) tile.biome = Biome.ICE;
-                    else tile.biome = Biome.WATER;
-                }
+                    tile.biome = Biome.WATER;
+                
 
             }
 
@@ -841,7 +830,7 @@ public class WS_WorldGenerator
                             tile.biome = (Biome)b;
                 }
 
-                if (tile.biome == Biome.WATER || tile.biome == Biome.ICE)  // if a land tile has become a water tile due to this...
+                if (tile.biome == Biome.WATER)  // if a land tile has become a water tile due to this...
                 {
                     tile.seaBody = true;
                     if (tile.altitude > 0.0f)

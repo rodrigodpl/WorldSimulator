@@ -85,7 +85,7 @@ public class WS_TechResearch : WS_BaseEvent
 
     protected override void Fail()
     {
-        tile.storedTechPoints += (tile.scholars + tile.baseCitizens);
+        tile.storedTechPoints += (tile.scholars + tile.baseCitizens) * 0.2f;
     }
 }
 

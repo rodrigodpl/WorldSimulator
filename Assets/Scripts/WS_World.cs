@@ -18,8 +18,8 @@ public class WS_World : MonoBehaviour
     public static List<WS_Tech> techs                       = new List<WS_Tech>();
     private WS_WorldGenerator worldGenerator                = null;     // world generator, which fills blank tiles with geographical data
 
-    public static int sizeX                                 = 150;      // number of columns in the map
-    public static int sizeY                                 = 120;      // number of rows in the map
+    public static int sizeX                                 = 200;      // number of columns in the map
+    public static int sizeY                                 = 100;      // number of rows in the map
     
     // Rendering  Variables
     [HideInInspector] public float lowestPoint              = 0.0f;         // all these variables are used for reference when drawing 
@@ -48,7 +48,10 @@ public class WS_World : MonoBehaviour
 
     public WS_Tile GetTile(Vector2Int position)                        // returns a tile from the map with its array position
     {
-        return tiles[position.x][position.y];
+        if (position.x < tiles.Length && position.x >= 0 && position.y < tiles[0].Length && position.y >= 0)
+            return tiles[position.x][position.y];
+        else
+            return null;
     }
 
     void Start()
@@ -129,7 +132,6 @@ public class WS_World : MonoBehaviour
             resources.Add(new WS_ResourceSource(ResourceType.HUNT));
             resources.Add(new WS_ResourceSource(ResourceType.IRON));
             resources.Add(new WS_ResourceSource(ResourceType.JADE));
-            resources.Add(new WS_ResourceSource(ResourceType.LEAD));
             resources.Add(new WS_ResourceSource(ResourceType.MARBLE));
             resources.Add(new WS_ResourceSource(ResourceType.OPIOIDS));
             resources.Add(new WS_ResourceSource(ResourceType.PASTURES));
@@ -175,7 +177,7 @@ public class WS_World : MonoBehaviour
         cultureTraits.Add(new FarAndBeyondTrait());
         cultureTraits.Add(new ExpansionistsTrait());
         cultureTraits.Add(new ShortHorizonsTrait());
-        cultureTraits.Add(new NothingLiketHomeTrait());
+        cultureTraits.Add(new NothingLikeHomeTrait());
 
         cultureTraits.Add(new HealthyTrait());
         cultureTraits.Add(new DurableTrait());
@@ -235,22 +237,26 @@ public class WS_World : MonoBehaviour
         governmentTraits.Add(new OpenViewsTrait());
 
         WS_WordCreator.Init();
-        InitWorld();
+        WS_CoatManager.Init();
     }
 
     private void Update()
     {
-        for (int tileXIt = 0; tileXIt < sizeX; tileXIt++)
-            for (int tileYIt = 0; tileYIt < sizeY; tileYIt++)
-                tiles[tileXIt][tileYIt].tileRenderer.Render();
+        if (Input.GetKey(KeyCode.Escape))
+            Application.Quit();
 
-        output.Apply();
+        if (tiles != null)
+        {
+            for (int tileXIt = 0; tileXIt < sizeX; tileXIt++)
+                for (int tileYIt = 0; tileYIt < sizeY; tileYIt++)
+                    tiles[tileXIt][tileYIt].tileRenderer.Render();
+
+            output.Apply();
+        }
     }
 
     private void UpdateWorld()
     {
-        if (Input.GetKey(KeyCode.Escape))
-            Application.Quit();
 
         timer.Start();
 
@@ -289,11 +295,10 @@ public class WS_World : MonoBehaviour
         Invoke("UpdateWorld", time);
     }
   
-    private void InitWorld()
+    public void InitWorld()
     {
         tiles = new WS_Tile[sizeX][];                    // initialize world
         worldGenerator = new WS_WorldGenerator();
-
 
         for (int i = 0; i < sizeX; i++)
         {
@@ -309,6 +314,8 @@ public class WS_World : MonoBehaviour
                 tiles[i][j] = new WS_Tile();
                 tiles[i][j].utility = new WS_TileUtility();
                 tiles[i][j].tileRenderer = new WS_TileRenderer();
+                tiles[i][j].name = WS_WordCreator.Create();
+
 
                 // set pointers to newly created tile
                 tiles[i][j].utility.setPosition(new Vector2Int(i, j));
@@ -354,9 +361,6 @@ public class WS_World : MonoBehaviour
 
         output.SetPixels32(resetColorArray);
         output.Apply();
-
-        realSize = new Vector2(output.width / 100.0f, output.height / 100.0f);
-        transform.Translate(new Vector3(realSize.x / 2.0f + 3.5f, realSize.y / 2.0f - 1.0f, 0.0f));
 
         UpdateWorld();
     }

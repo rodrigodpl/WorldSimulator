@@ -7,6 +7,7 @@ public class WS_Tile
     // Utility data
     public WS_TileUtility utility = null;
     public WS_TileRenderer tileRenderer = null;
+    public string name = "";
 
     //Geographical Data
     public float altitude           = float.NaN;

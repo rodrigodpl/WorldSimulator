@@ -38,20 +38,26 @@ public class WS_WordCreator : MonoBehaviour
             switch(form)
             {
                 case SyllableForm.CONSONANT_VOWEL:
-                    word += getConsonant();
+                    if(i == 0)  word += char.ToUpper(getConsonant());
+                    else        word += getConsonant();
+
                     word += getVowel();
 
                     break;
 
                 case SyllableForm.CONSONANT_VOWEL_CONSONANT:
-                    word += getConsonant();
+
+                    if(i == 0)  word += char.ToUpper(getConsonant());
+                    else        word += getConsonant();
+
                     word += getVowel();
                     word += getConsonant();
 
                     break;
 
                 case SyllableForm.VOWEL_CONSONANT:
-                    word += getVowel();
+                    if (i == 0) word += char.ToUpper(getVowel());
+                    else        word += getVowel();
                     word += getConsonant();
 
                     break;

@@ -247,7 +247,7 @@ public class WS_TechnologyInfrastructure : WS_Infrastructure
 
     public override float Chance(WS_Tile tile)
     {
-        return tile.availableTech.Count / (tile.researchedTech.Count + 3.0f);
+        return (tile.availableTech.Count / (tile.researchedTech.Count + 3.0f)) * 0.5f;
     }
 
     public override void Apply(WS_Tile tile, int upgradeLevel)

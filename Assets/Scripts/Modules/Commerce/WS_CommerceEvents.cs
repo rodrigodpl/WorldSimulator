@@ -42,10 +42,10 @@ public class WS_ResourceConsumptionEvent : WS_BaseEvent
                     // METALS
                     case ResourceType.IRON:     resWarBonus +=          0.3f * stack.quality; break;
                     case ResourceType.COPPER:   resWarBonus +=          0.2f * stack.quality; break;
-                    case ResourceType.LEAD:     resConstructionBonus += 0.1f * stack.quality; break;
                     case ResourceType.TIN:      resWarBonus +=          0.1f * stack.quality; break;
                     case ResourceType.SILVER:   resProsperityBonus +=   0.2f * stack.quality; break;
                     case ResourceType.GOLD:     resProsperityBonus +=   0.3f * stack.quality; break;
+                    case ResourceType.COAL:     resConstructionBonus += 0.3f * stack.quality; break;
                                                 
                     // STONE                    
                     case ResourceType.GRANITE:  resConstructionBonus += 0.2f * stack.quality; break;
@@ -53,15 +53,14 @@ public class WS_ResourceConsumptionEvent : WS_BaseEvent
                     case ResourceType.MARBLE:   resUnrestBonus +=       0.1f * stack.quality; break;
                     case ResourceType.JADE:     resProsperityBonus +=   0.2f * stack.quality; break;
                     case ResourceType.SALT:     resFoodBonus +=         0.3f * stack.quality; break;
+                    case ResourceType.WOOD:     resConstructionBonus += 0.2f * stack.quality; break;
                                                 
                     // ORGANIC                  
-                    case ResourceType.WOOD:     resConstructionBonus += 0.2f * stack.quality; break;
                     case ResourceType.PASTURES: resFoodBonus +=         0.2f * stack.quality; break;
                     case ResourceType.FISH:     resFoodBonus +=         0.2f * stack.quality; break;
                     case ResourceType.HUNT:     resFoodBonus +=         0.1f * stack.quality; break;
                     case ResourceType.FURS:     resProsperityBonus +=   0.1f * stack.quality; break;
                     case ResourceType.SPICES:   resUnrestBonus +=       0.2f * stack.quality; break;
-                    case ResourceType.COAL:     resConstructionBonus += 0.3f * stack.quality; break;
                     case ResourceType.OPIOIDS:  resUnrestBonus +=       0.3f * stack.quality; break;
                 }
             }

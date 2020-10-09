@@ -8,7 +8,8 @@ public enum TraitGroup { EXPANSION, FOOD_EFFICIENCY, HEALTHCARE, SURVIVALISM, IN
 
 public class WS_Trait
 {
-    public string traitName = "WS_Trait";
+    virtual public string traitName() { return "WS_Trait"; }
+    virtual public string traitDesc() { return "WS_TraitDesc"; }
 
     virtual public void Apply(WS_Entity entity) { }
     virtual public void Reverse(WS_Entity entity) { }

@@ -7,6 +7,7 @@ public enum EntityType { NONE, CULTURE, RELIGION, GOVERNMENT }
 public class WS_Entity
 {
     public EntityType type = EntityType.NONE;
+    public Sprite sprite = null;
 
     float minTraits = 0.0f;
     float maxTraits = 0.0f;
@@ -14,24 +15,27 @@ public class WS_Entity
     public Color color = Color.white;
 
     public WS_Tile capital = null;
+    public string name = "";
 
     public List<WS_Trait> traits = new List<WS_Trait>();
 
     public WS_Entity() { }
 
-    public void Init(WS_Tile tile, EntityType _type)  
+    public void Init(WS_Tile tile, EntityType _type)
     {
         type = _type;
 
-        switch(type)
+        switch (type)
         {
             case EntityType.CULTURE:
                 minTraits = WS_Culture.MIN_TRAITS_CULTURE;
                 maxTraits = WS_Culture.MAX_TRAITS_CULTURE;
+                name = WS_WordCreator.Create();
                 break;
             case EntityType.RELIGION:
                 minTraits = WS_Religion.MIN_TRAITS_RELIGION;
                 maxTraits = WS_Religion.MAX_TRAITS_RELIGION;
+                name = WS_WordCreator.Create();
                 break;
             case EntityType.GOVERNMENT:
                 minTraits = WS_Government.MIN_TRAITS_GOVERNMENT;
@@ -47,14 +51,19 @@ public class WS_Entity
             selector = Random.Range(minTraits - traits.Count - 0.99f, maxTraits - traits.Count - 0.1f);
         }
 
+        if (type == EntityType.GOVERNMENT)
+            ((WS_Government)this).Rename();
+
         capital = tile;
-        color = new Color(Random.Range(0.1f, 0.9f), Random.Range(0.1f, 0.9f), Random.Range(0.1f, 0.9f)); // dark tones
+        color = new Color(Random.Range(0.3f, 1.0f), Random.Range(0.3f, 1.0f), Random.Range(0.3f, 1.0f));
+        sprite = WS_CoatManager.GetCoat();
     }
 
 
     public void Init(WS_Entity base_entity, WS_Tile tile)  
     {
         type = base_entity.type;
+        name = WS_WordCreator.Create();
 
         switch (type)
         {
@@ -86,13 +95,15 @@ public class WS_Entity
         capital = tile;
         float r = base_entity.color.r; float g = base_entity.color.g; float b = base_entity.color.b;
 
-        color = base_entity.color + new Color(Random.Range(-r + 0.1f, 0.9f-r), Random.Range(-g + 0.1f, 0.9f - g), Random.Range(-b + 0.1f, 0.9f - b));
+        color = new Color(Random.Range(0.3f, 1.0f), Random.Range(0.3f, 1.0f), Random.Range(0.3f, 1.0f));
+        sprite = WS_CoatManager.GetCoat();
     }
 
 
     public void Init(WS_Entity base_entity_A, WS_Entity base_entity_B, WS_Tile tile)  
     {
         type = base_entity_A.type;
+        name = WS_WordCreator.Create();
 
         if (type == EntityType.CULTURE) ((WS_Culture)this).merged = true;
         if (type == EntityType.RELIGION) ((WS_Religion)this).merged = true;
@@ -164,6 +175,7 @@ public class WS_Entity
 
         capital = tile;
         color = (base_entity_A.color + base_entity_B.color) / 2.0f;
+        sprite = WS_CoatManager.GetCoat();
     }
 
 
@@ -187,13 +199,18 @@ public class WS_Entity
 
         foreach (WS_Trait trait in availableTraits)
         {
+            bool valid = true;
+
             foreach (WS_Trait ownedTrait in traits)
                 if (ownedTrait.Group() == trait.Group())
-                    continue;
+                {
+                    valid = false;
+                    break;
+                }
 
             float chance = trait.Chance(tile);
 
-            if (chance > 0.0f)
+            if (chance > 0.0f && valid)
             {
                 totalChance += chance;
                 possibleTraits.Add(trait);

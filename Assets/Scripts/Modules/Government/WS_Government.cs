@@ -23,16 +23,14 @@ public class WS_Government : WS_Entity
     public WS_Tile rebels = null;
     public WS_Tile rebelsCultural = null;
     public WS_Tile rebelsReligious = null;
-     
-    public string name = "";
+ 
      
     //TODO
-    //    add main menu
-    //    add world creation menu
-    //    add tile viewer
     //    add entity viewer
-    //    add tech tree?
-    //    add war view?
+    //    fix viweport
+    //    add tech view filter
+    //    add map size
+    //    add edit warning
 
     public List<WS_Government> borderingGovernments = new List<WS_Government>();
     public List<float> borderingOpinions = new List<float>();
@@ -50,20 +48,28 @@ public class WS_Government : WS_Entity
 
     public EventModule preferredTech = EventModule.POPULATION;
 
-    public WS_Government(WS_Tile tile) { Init(tile, EntityType.GOVERNMENT); Rename(); }
+    public WS_Government(WS_Tile tile) { Init(tile, EntityType.GOVERNMENT); }
 
     public void Rename()
     {
         PowerDistribution powerDistribution = PowerDistribution.AUTOCRACY;
-        PowerHolder powerHolder = PowerHolder.PEOPLE;
+        PowerHolder powerHolder = PowerHolder.RULER;
 
-        //foreach(WS_Trait trait in traits)
-        //{
-        //    if(trait.Group() == TraitGroup.POWER_DISTRIBUTION)
-        //    {
-
-        //    }
-        //}
+        foreach(WS_Trait trait in traits)
+        {
+            if(trait.Group() == TraitGroup.POWER_DISTRIBUTION)
+            {
+                if (trait.traitName() == "Oligarchy") powerDistribution = PowerDistribution.OLIGARCHY;
+                if (trait.traitName() == "Ruling Council") powerDistribution = PowerDistribution.RULING_COUNCIL;
+                if (trait.traitName() == "Democracy") powerDistribution = PowerDistribution.DEMOCRACY;
+            }
+            else if (trait.Group() == TraitGroup.POWER_HOLDER)
+            {
+                if (trait.traitName() == "Nobility Holder") powerHolder = PowerHolder.NOBILITY;
+                if (trait.traitName() == "Church Holder") powerHolder = PowerHolder.CHURCH;
+                if (trait.traitName() == "People Holder") powerHolder = PowerHolder.PEOPLE;
+            }
+        }
 
         switch (powerDistribution)
         {
@@ -113,6 +119,9 @@ public class WS_Government : WS_Entity
                 }
                 break;
         }
+
+        name += " of ";
+        name += WS_WordCreator.Create();
     }
 
 
