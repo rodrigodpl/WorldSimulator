@@ -23,7 +23,7 @@ On Start, the tool will use the Terrain Generation paremeters introduced by the 
 
 Then, and until the tool is closed, the main loop will execute. On the main loop, each Event will travel the whole simulation map and execute its effects if fired. Once an Event has travelled the whole map, the next Event will start executing. Once all Events have travelled the map, a year passes and the process starts again.
 
-![Main Loop](https://imgur.com/qf9Pog1)
+![Main Loop](https://imgur.com/qf9Pog1.png)
 
 ## How to add a new Event
 
@@ -35,7 +35,7 @@ Then, and until the tool is closed, the main loop will execute. On the main loop
    2.4 Fail: alternative body of the Event, in case there are two possible outcomes. If not overridden, it has no effect.           
 3. Add the Event into the list eventPool of WS_World (order matters!).
 
-![Event](https://imgur.com/Zf0A70R)
+![Event](https://imgur.com/Zf0A70R.png)
   
   Note: access the tile data by using the variable _tile_ inside the Event.
   
@@ -48,7 +48,7 @@ Then, and until the tool is closed, the main loop will execute. On the main loop
 5. Modify WS_Entity Init method to include your new Entity.
 6. Add a method for Tiles to reference the your new Entity in the PopulateWorld method of WorldGenerator.
 
-![Entity](https://imgur.com/rkMH3C1)
+![Entity](https://imgur.com/rkMH3C1.png)
 
 ## How to add a new Trait
 
@@ -62,6 +62,6 @@ Then, and until the tool is closed, the main loop will execute. On the main loop
 4. Create a new List of Traits for your Entity in WS_World, and add your new Trait(s) to the List in the method Start in WS_World.
 5. Modify WS_Entity addRandomTrait method to include your list of Traits.
 
-![Trait](https://imgur.com/AyYeSfX)
+![Trait](https://imgur.com/AyYeSfX.png)
    
 
